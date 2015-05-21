@@ -4,6 +4,7 @@ type: application/javascript
 module-type: library
 
   A library of reusable functions, used in the TW5-visjsTimeline plugin
+  Continued from emkay's plugin at https://github.com/emkayonline/tw5visjs
 
 \*/
 
