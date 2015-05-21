@@ -1,0 +1,26 @@
+title: $:/plugins/kixam/timeline/styles.css
+tags: [[$:/tags/Stylesheet]]
+type: text/css
+
+.vis.timeline .item.dot {
+  border-color: inherit;
+}
+
+.vis.timeline .item.range {
+  background-color: #f0f0ff;
+}
+
+.vis.timeline .item.range .content {
+  width: 100%;
+  text-align: center;
+}
+
+.vis.timeline .labelset .vlabel {
+  background-color: #fffff0;
+}
+
+.vis.timeline .labelset .vlabel .inner {
+  font-weight: bold;
+  width: 100%;
+  text-align: center;
+}

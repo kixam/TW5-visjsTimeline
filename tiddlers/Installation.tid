@@ -1,0 +1,9 @@
+color: #ff0000
+created: 20150511070703594
+modified: 20150511070703594
+tags: [[Group A]]
+title: Installation
+
+Just drag and drop [[vis.js|$:/plugins/felixhayashi/vis]], [[moment.js|$:/plugins/kixam/moment]], and [[vis.js Timeline|$:/plugins/kixam/timeline]] plugins from the [[Plugins|$:/core/ui/ControlPanel/Plugins]] list into your [[TiddlyWiki|http://tiddlywiki.com/#TiddlyWiki]].
+
+{{$:/core/ui/ControlPanel/Plugins}}
