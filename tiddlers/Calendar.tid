@@ -1,9 +1,0 @@
-color: #0033aa
-created: 20150515070703594
-modified: 20150516091035521
-tags: [[$:/tags/SideBar]]
-title: Calendar 
-caption: Calendar
-list-before: $:/core/ui/SideBar/Open
-
-{{Demonstration}}
