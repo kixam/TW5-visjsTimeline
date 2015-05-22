@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# we assume the repository is cloned in <TiddlyWiki repo dir>/contrib/<plugin repo dir>
-# and that all required plugins are linked from <TiddlyWiki>/plugins/ as such: vis / moment / timeline
+# we assume the repository is cloned in <TiddlyWiki repo dir>/contrib/<author>/<plugin repo dir>
+# and that all required plugins are linked from <TiddlyWiki repo dir>/plugins/<author>/* as such: vis / moment / timeline
 
-node ../../tiddlywiki.js . --build index
+node ../../../tiddlywiki.js . --build index
 
 if [[ $? -eq 0 ]]
 then
