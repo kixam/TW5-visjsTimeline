@@ -19,3 +19,12 @@ type: text/css
   width: 100%;
   text-align: center;
 }
+
+.navpad {
+  position: relative;
+}
+
+.navpad div {
+  z-index: 9999;
+  -moz-user-select: none;
+}
