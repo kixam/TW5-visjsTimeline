@@ -10,11 +10,6 @@ type: text/css
   background-color: #f0f0ff;
 }
 
-.vis.timeline .item.range .content {
-  width: 100%;
-  text-align: center;
-}
-
 .vis.timeline .labelset .vlabel {
   background-color: #fffff0;
 }
