@@ -191,8 +191,8 @@ module-type: widget
       navpad.childNodes[i].addEventListener("click", this.handleNavpadClick, false);
     }
 
-    var top = this.timelineHolder.getElementsByClassName("vispanel center jooo")[0].getElementsByClassName("shadow top")[0];
-    var bottom = this.timelineHolder.getElementsByClassName("vispanel center jooo")[0].getElementsByClassName("shadow bottom")[0];
+    var top = this.timelineHolder.getElementsByClassName("vispanel center")[0].getElementsByClassName("shadow top")[0];
+    var bottom = this.timelineHolder.getElementsByClassName("vispanel center")[0].getElementsByClassName("shadow bottom")[0];
 
     this.handleItemsVisibilityChanged = this.handleItemsVisibilityChanged.bind(this);
     var self = this;
@@ -217,23 +217,23 @@ module-type: widget
     var ratio = 0.2; // horizontal movement
     var step = 10; // vertical movement
 
-    var jooodiv = this.timelineHolder.getElementsByClassName("vispanel center jooo")[0];
-    var contentdiv = jooodiv.getElementsByClassName("content")[0];
+    var centerdiv = this.timelineHolder.getElementsByClassName("vispanel center")[0];
+    var contentdiv = centerdiv.getElementsByClassName("content")[0];
     switch (event.target.id) {
       case "up":
-        jooodiv.getElementsByClassName("shadow bottom")[0].style["visibility"] = "visible";
+        centerdiv.getElementsByClassName("shadow bottom")[0].style["visibility"] = "visible";
         contentdiv.style["top"] = parseInt(contentdiv.style["top"]) + step + "px";
         if(parseInt(contentdiv.style["top"]) >= 0) {
           contentdiv.style["top"] = "0px";
-          jooodiv.getElementsByClassName("shadow top")[0].style["visibility"] = "hidden";
+          centerdiv.getElementsByClassName("shadow top")[0].style["visibility"] = "hidden";
         }
         break;
       case "down":
-        jooodiv.getElementsByClassName("shadow top")[0].style["visibility"] = "visible";
+        centerdiv.getElementsByClassName("shadow top")[0].style["visibility"] = "visible";
         contentdiv.style["top"] = parseInt(contentdiv.style["top"]) - step + "px";
-        if( Math.abs(parseInt(contentdiv.style["top"])) > contentdiv.getBoundingClientRect().height - jooodiv.getBoundingClientRect().height ) {
-          contentdiv.style["top"] = contentdiv.getBoundingClientRect().height - jooodiv.getBoundingClientRect().height;
-          jooodiv.getElementsByClassName("shadow bottom")[0].style["visibility"] = "hidden";
+        if( Math.abs(parseInt(contentdiv.style["top"])) > contentdiv.getBoundingClientRect().height - centerdiv.getBoundingClientRect().height ) {
+          contentdiv.style["top"] = contentdiv.getBoundingClientRect().height - centerdiv.getBoundingClientRect().height;
+          centerdiv.getElementsByClassName("shadow bottom")[0].style["visibility"] = "hidden";
         }
         break;
       case "left":
