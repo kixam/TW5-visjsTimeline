@@ -30,6 +30,7 @@ If present, the tiddler's `color` field is used to render the corresponding item
 |`groupField`|A field whose value will be used to group tiddlers on the timeline|
 |`customTime`|A date at which a vertical bar will be shown on the timeline (In the same format as start/endDateField fields)|
 |`groupTags`|If `groupField` field is not used and if a filtered tiddler has a tag among the given [[Title List|http://tiddlywiki.com/#Title%20List]], this tag will be used as the item's group|
+|`boxing`|If set to `static` (default), the containing box will be static. If set to `auto`, the timeline will automatically adjust its size to the items to show|
 
 The content of the `<$visjstimeline>` widget is ignored.
 

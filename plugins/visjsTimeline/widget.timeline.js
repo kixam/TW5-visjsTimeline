@@ -33,18 +33,27 @@ module-type: widget
 
     var attrParseWorked = this.execute();
     if (attrParseWorked === undefined) {
-      var timelineHolder = $tw.utils.domMaker("div",{"attributes": {"style": "height:100%;padding:2px;"}});
+      var timelineHolder = this.document.createElement("div");
       parent.insertBefore(timelineHolder,nextSibling);
       this.domNodes.push(timelineHolder);
 
-      // -- adapted from felixhayashi's tiddlymap in widget.map.js
-      this.sidebar = document.getElementsByClassName("tc-sidebar-scrollable")[0];
-      this.isContainedInSidebar = (this.sidebar && this.sidebar.contains(this.parentDomNode));
-      parent.style["width"] = this.getAttribute("width", "100%");
-      this.handleResizeEvent = this.handleResizeEvent.bind(this);
-      window.addEventListener("resize", this.handleResizeEvent, false);
-      this.handleResizeEvent();
-      // --
+      if(this.attributes["boxing"] !== "auto") {
+        timelineHolder.style["height"]="100%";
+        // -- adapted from felixhayashi's tiddlymap in widget.map.js
+        this.sidebar = document.getElementsByClassName("tc-sidebar-scrollable")[0];
+        this.isContainedInSidebar = (this.sidebar && this.sidebar.contains(this.parentDomNode));
+        if(this.isContainedInSidebar) {
+          this.parentDomNode.style["margin"]="0";
+          this.parentDomNode.style["padding-right"]="2px";
+          this.parentDomNode.parentNode.parentNode.style["margin-top"]="0";
+          console.log(this.parentDomNode.parentNode.parentNode);
+        }
+        parent.style["width"] = this.getAttribute("width", "100%");
+        this.handleResizeEvent = this.handleResizeEvent.bind(this);
+        window.addEventListener("resize", this.handleResizeEvent, false);
+        this.handleResizeEvent();
+        // --
+      }
 
       this.createTimeline(timelineHolder);
       this.updateTimeline();
@@ -59,13 +68,14 @@ module-type: widget
 
   TimelineWidget.prototype.execute = function() {
     var attrParseWorked = utils.parseWidgetAttributes(this,{
-      filter:        {  type: "string", defaultValue: "[!is[system]]"},
+           filter: { type: "string", defaultValue: "[!is[system]]"},
            groupField: { type: "string", defaultValue: undefined},
            startDateField: { type: "string", defaultValue: "created"},
            endDateField:  { type: "string", defaultValue: undefined},
            format:  { type: "string", defaultValue: undefined},
            customTime:  { type: "string", defaultValue: undefined},
-           groupTags: {type: "string", defaultValue: undefined}
+           groupTags: {type: "string", defaultValue: undefined},
+           boxing: {type: "string", defaultValue: "static"}
            });
 
     if ((attrParseWorked === undefined) && (this.filter)) {
@@ -150,7 +160,7 @@ module-type: widget
       var windowHeight = window.innerHeight;
       var canvasOffset = this.parentDomNode.getBoundingClientRect().top;
       var distanceBottom = this.getAttribute("bottom-spacing", "0px");
-      var calculatedHeight = (windowHeight - canvasOffset) + "px";
+      var calculatedHeight = (windowHeight - canvasOffset - (this.isContainedInSidebar?3:0)) + "px";
       this.parentDomNode.style["height"] = "calc(" + calculatedHeight + " - " + distanceBottom + ")";
     } else {
       var height = this.getAttribute("height");
@@ -280,7 +290,10 @@ module-type: widget
       maxDate.setTime(maxDate.getTime()+Math.ceil(diff*.08));
     }
     this.timeline.setWindow(minDate, maxDate);
-    var options = {height:"100%"};
+    var options = [];
+    if(this.attributes["boxing"] !== "auto"){
+      options["height"] = "100%";
+    }
     if (this.customTime !== undefined) {
       var d = dateFieldToDate(this.customTime, this.format);
       if (d !== undefined) {
