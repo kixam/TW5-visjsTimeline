@@ -33,9 +33,10 @@ module-type: widget
 
     var attrParseWorked = this.execute();
     if (attrParseWorked === undefined) {
-      var timelineHolder = this.document.createElement("div");
+      var timelineHolder = $tw.utils.domMaker("div",{});
       parent.insertBefore(timelineHolder,nextSibling);
       this.domNodes.push(timelineHolder);
+      this.timelineHolder = timelineHolder;
 
       if(this.attributes["boxing"] !== "auto") {
         timelineHolder.style["height"]="100%";
@@ -46,7 +47,6 @@ module-type: widget
           this.parentDomNode.style["margin"]="0";
           this.parentDomNode.style["padding-right"]="2px";
           this.parentDomNode.parentNode.parentNode.style["margin-top"]="0";
-          console.log(this.parentDomNode.parentNode.parentNode);
         }
         parent.style["width"] = this.getAttribute("width", "100%");
         this.handleResizeEvent = this.handleResizeEvent.bind(this);
@@ -55,10 +55,12 @@ module-type: widget
         // --
       }
 
-      this.createTimeline(timelineHolder);
+      this.createTimeline();
       this.updateTimeline();
-      // We follow the d3.js pattern here as children are ignored
-      // this.renderChildren(timelineHolder,nextSibling);
+
+      if(this.attributes["navpad"] !== undefined) {
+        this.createNavpad();
+      }
     } else {
       utils.dispError(this.parseTreeNode.type+": Unexpected attribute(s) "+attrParseWorked.join(", "));
       this.refresh = function() {}; // disable refresh of this as it won't work with incorrrect attributes
@@ -75,7 +77,8 @@ module-type: widget
            format:  { type: "string", defaultValue: undefined},
            customTime:  { type: "string", defaultValue: undefined},
            groupTags: {type: "string", defaultValue: undefined},
-           boxing: {type: "string", defaultValue: "static"}
+           boxing: {type: "string", defaultValue: "static"},
+           navpad: {type: "string", defaultValue: undefined}
            });
 
     if ((attrParseWorked === undefined) && (this.filter)) {
@@ -130,14 +133,10 @@ module-type: widget
   };
 
 
-  TimelineWidget.prototype.createTimeline = function(holderDiv) {
+  TimelineWidget.prototype.createTimeline = function() {
     var data = [];
-    // this.document === $tw.fakeDocument for test mode
-    if (this.parentWidget.parentWidget.mockTimeline === undefined) {
-      this.timeline = new vis.Timeline(holderDiv, data);
-    } else {
-      this.timeline = this.parentWidget.parentWidget.mockTimeline;
-    }
+    this.timeline = new vis.Timeline(this.timelineHolder, data);
+
     var self = this;
     this.timeline.on('click', function(properties) {
       // Check if background or a tiddler is selected
@@ -171,6 +170,103 @@ module-type: widget
     }
   };
   // --
+
+  TimelineWidget.prototype.createNavpad = function() {
+    var navpad = $tw.utils.domMaker("div",{class: "navpad"});
+
+    this.timelineHolder.appendChild(navpad);
+    this.domNodes.push(navpad);
+
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "network-navigation up", id: "up", style: "visibility: hidden"}}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "network-navigation down", id: "down", style: "visibility: hidden"}}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "network-navigation left", id: "left"}}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "network-navigation right", id: "right"}}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "network-navigation zoomIn", id: "zoomIn"}}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "network-navigation zoomOut", id: "zoomOut"}}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "network-navigation zoomExtends", id: "zoomExtends"}}));
+
+    this.handleNavpadClick = this.handleNavpadClick.bind(this);
+    for(var i=0; i<navpad.childNodes.length; i++) {
+      this.domNodes.push(navpad.childNodes[i]);
+      navpad.childNodes[i].addEventListener("click", this.handleNavpadClick, false);
+    }
+
+    var top = this.timelineHolder.getElementsByClassName("vispanel center jooo")[0].getElementsByClassName("shadow top")[0];
+    var bottom = this.timelineHolder.getElementsByClassName("vispanel center jooo")[0].getElementsByClassName("shadow bottom")[0];
+
+    this.handleItemsVisibilityChanged = this.handleItemsVisibilityChanged.bind(this);
+    var self = this;
+    var observer = new MutationObserver(function(mutations) {
+      for(var i=0; i<mutations.length; i++) {
+        self.handleItemsVisibilityChanged(self,mutations[i]);
+      }});
+    observer.observe(top, {attributes: true, subtree: false});
+    observer.observe(bottom, {attributes: true, subtree: false});
+  }
+
+  TimelineWidget.prototype.handleItemsVisibilityChanged = function(self,mutation) {
+    if(mutation.attributeName === "style") {
+      var cls = "network-navigation " + ( (' ' + mutation.target.className + ' ').indexOf(' top ') > -1 ? "up":"down" );
+      self.timelineHolder.getElementsByClassName(cls)[0].style["visibility"] = mutation.target.style["visibility"];
+    }
+  }
+
+  TimelineWidget.prototype.handleNavpadClick = function(event) {
+    var range = this.timeline.getWindow();
+    var interval = range.end - range.start;
+    var ratio = 0.2; // horizontal movement
+    var step = 10; // vertical movement
+
+    var jooodiv = this.timelineHolder.getElementsByClassName("vispanel center jooo")[0];
+    var contentdiv = jooodiv.getElementsByClassName("content")[0];
+    switch (event.target.id) {
+      case "up":
+        jooodiv.getElementsByClassName("shadow bottom")[0].style["visibility"] = "visible";
+        contentdiv.style["top"] = parseInt(contentdiv.style["top"]) + step + "px";
+        if(parseInt(contentdiv.style["top"]) >= 0) {
+          contentdiv.style["top"] = "0px";
+          jooodiv.getElementsByClassName("shadow top")[0].style["visibility"] = "hidden";
+        }
+        break;
+      case "down":
+        jooodiv.getElementsByClassName("shadow top")[0].style["visibility"] = "visible";
+        contentdiv.style["top"] = parseInt(contentdiv.style["top"]) - step + "px";
+        if( Math.abs(parseInt(contentdiv.style["top"])) > contentdiv.getBoundingClientRect().height - jooodiv.getBoundingClientRect().height ) {
+          contentdiv.style["top"] = contentdiv.getBoundingClientRect().height - jooodiv.getBoundingClientRect().height;
+          jooodiv.getElementsByClassName("shadow bottom")[0].style["visibility"] = "hidden";
+        }
+        break;
+      case "left":
+        this.timeline.setWindow({
+          start: range.start.valueOf() - interval * ratio,
+          end  : range.end.valueOf()   - interval * ratio,
+        });
+        break;
+      case "right":
+        this.timeline.setWindow({
+          start: range.start.valueOf() + interval * ratio,
+          end  : range.end.valueOf()   + interval * ratio,
+        });
+        break;
+      case "zoomIn":
+        this.timeline.setWindow({
+          start: range.start.valueOf() + interval * ratio,
+          end  : range.end.valueOf()   - interval * ratio,
+        });
+        break;
+      case "zoomOut":
+        this.timeline.setWindow({
+          start: range.start.valueOf() - interval * ratio,
+          end  : range.end.valueOf()   + interval * ratio,
+        });
+        break;
+      case "zoomExtends":
+        this.timeline.fit();
+        break;
+      default:
+        dispError("No such action: " + action);
+    }
+  }
 
   function dateFieldToDate(dateField, dateFormat) {
     dateField = dateField.trim();
@@ -291,8 +387,11 @@ module-type: widget
     }
     this.timeline.setWindow(minDate, maxDate);
     var options = [];
-    if(this.attributes["boxing"] !== "auto"){
+    if(this.attributes["boxing"] !== "auto") {
       options["height"] = "100%";
+    }
+    if(this.attributes["navpad"] !== undefined) {
+      options["orientation"] = "top";
     }
     if (this.customTime !== undefined) {
       var d = dateFieldToDate(this.customTime, this.format);
