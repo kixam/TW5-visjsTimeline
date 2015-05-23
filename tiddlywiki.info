@@ -6,7 +6,8 @@
     "kixam/timeline"
   ],
   "themes": [
-    "tiddlywiki/vanilla"
+    "tiddlywiki/vanilla",
+    "tiddlywiki/snowwhite"
   ],
   "languages": [
   ],
