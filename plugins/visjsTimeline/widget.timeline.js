@@ -357,35 +357,6 @@ module-type: widget
     var result = timepointList.reduce(addTimeData(self), {data: [], groups: {}, errors: []});
     this.displayedTiddlers = result.data;
     this.timeline.setItems(result.data);
-    var theMax, theMin, startTime, endDate, endTime, minDate, maxDate;
-    for (d in result.data) {
-      startTime = result.data[d].start.getTime();
-      endDate = result.data[d].end;
-      if (endDate !== undefined) {
-        endTime = endDate.getTime();
-      }
-      else {
-        endTime = startTime;
-      }
-      if (theMin === undefined || startTime < theMin) {
-        theMin = startTime;
-      }
-      if (theMax === undefined || endTime > theMax) {
-        theMax = endTime;
-      }
-    }
-    if (theMin !== undefined) {
-      minDate = new Date(theMin);
-    }
-    if (theMax !== undefined) {
-      maxDate = new Date(theMax);
-    }
-    if(minDate !== undefined && maxDate !== undefined) {
-      var diff = Math.abs(maxDate - minDate);
-      minDate.setTime(minDate.getTime()-Math.ceil(diff*.02));
-      maxDate.setTime(maxDate.getTime()+Math.ceil(diff*.08));
-    }
-    this.timeline.setWindow(minDate, maxDate);
     var options = [];
     if(this.attributes["boxing"] !== "auto") {
       options["height"] = "100%";
@@ -416,6 +387,7 @@ module-type: widget
     if (result.errors.length !== 0) {
       utils.dispError(this.parseTreeNode.type+": <ul><li>"+result.errors.join("</li><li>")+"</li></ul>");
     }
+    this.timeline.fit();
   };
 
   exports.visjstimeline = TimelineWidget;
