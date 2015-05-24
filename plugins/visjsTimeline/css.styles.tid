@@ -2,19 +2,19 @@ title: $:/plugins/kixam/timeline/styles.css
 tags: [[$:/tags/Stylesheet]]
 type: text/css
 
-.vis.timeline .item.dot {
+.vis-item .vis-dot {
   border-color: inherit;
 }
 
-.vis.timeline .item.range {
+.vis-item .vis-range {
   background-color: #f0f0ff;
 }
 
-.vis.timeline .labelset .vlabel {
+.vis-labelset .vis-label {
   background-color: #fffff0;
 }
 
-.vis.timeline .labelset .vlabel .inner {
+.vis-labelset .vis-label .vis-inner {
   font-weight: bold;
   width: 100%;
   text-align: center;

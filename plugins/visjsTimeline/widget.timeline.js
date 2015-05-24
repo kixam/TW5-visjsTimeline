@@ -47,6 +47,8 @@ module-type: widget
           this.parentDomNode.style["margin"]="0";
           this.parentDomNode.style["padding-right"]="2px";
           this.parentDomNode.parentNode.parentNode.style["margin-top"]="0";
+        } else {
+          this.parentDomNode.style["padding-bottom"]="2px";
         }
         parent.style["width"] = this.getAttribute("width", "100%");
         this.handleResizeEvent = this.handleResizeEvent.bind(this);
@@ -172,18 +174,19 @@ module-type: widget
   // --
 
   TimelineWidget.prototype.createNavpad = function() {
-    var navpad = $tw.utils.domMaker("div",{class: "navpad"});
+    var navpad = $tw.utils.domMaker("div",{class: "vis-navigation navpad"});
 
+    this.timelineHolder.className = "vis-network";
     this.timelineHolder.appendChild(navpad);
     this.domNodes.push(navpad);
 
-    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "network-navigation up", id: "up", style: "visibility: hidden"}}));
-    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "network-navigation down", id: "down", style: "visibility: hidden"}}));
-    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "network-navigation left", id: "left"}}));
-    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "network-navigation right", id: "right"}}));
-    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "network-navigation zoomIn", id: "zoomIn"}}));
-    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "network-navigation zoomOut", id: "zoomOut"}}));
-    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "network-navigation zoomExtends", id: "zoomExtends"}}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "vis-button vis-up", id: "up", style: "visibility: hidden"}}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "vis-button vis-down", id: "down", style: "visibility: hidden"}}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "vis-button vis-left", id: "left"}}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "vis-button vis-right", id: "right"}}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "vis-button vis-zoomIn", id: "zoomIn"}}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "vis-button vis-zoomOut", id: "zoomOut"}}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "vis-button vis-zoomExtends", id: "zoomExtends"}}));
 
     this.handleNavpadClick = this.handleNavpadClick.bind(this);
     for(var i=0; i<navpad.childNodes.length; i++) {
@@ -191,8 +194,8 @@ module-type: widget
       navpad.childNodes[i].addEventListener("click", this.handleNavpadClick, false);
     }
 
-    var top = this.timelineHolder.getElementsByClassName("vispanel center")[0].getElementsByClassName("shadow top")[0];
-    var bottom = this.timelineHolder.getElementsByClassName("vispanel center")[0].getElementsByClassName("shadow bottom")[0];
+    var top = this.timelineHolder.getElementsByClassName("vis-panel vis-center")[0].getElementsByClassName("vis-shadow vis-top")[0];
+    var bottom = this.timelineHolder.getElementsByClassName("vis-panel vis-center")[0].getElementsByClassName("vis-shadow vis-bottom")[0];
 
     this.handleItemsVisibilityChanged = this.handleItemsVisibilityChanged.bind(this);
     var self = this;
@@ -206,7 +209,7 @@ module-type: widget
 
   TimelineWidget.prototype.handleItemsVisibilityChanged = function(self,mutation) {
     if(mutation.attributeName === "style") {
-      var cls = "network-navigation " + ( (' ' + mutation.target.className + ' ').indexOf(' top ') > -1 ? "up":"down" );
+      var cls = "vis-button " + ( (' ' + mutation.target.className + ' ').indexOf(' vis-top ') > -1 ? "vis-up":"vis-down" );
       self.timelineHolder.getElementsByClassName(cls)[0].style["visibility"] = mutation.target.style["visibility"];
     }
   }
@@ -217,23 +220,23 @@ module-type: widget
     var ratio = 0.2; // horizontal movement
     var step = 10; // vertical movement
 
-    var centerdiv = this.timelineHolder.getElementsByClassName("vispanel center")[0];
-    var contentdiv = centerdiv.getElementsByClassName("content")[0];
+    var centerdiv = this.timelineHolder.getElementsByClassName("vis-panel vis-center")[0];
+    var contentdiv = centerdiv.getElementsByClassName("vis-content")[0];
     switch (event.target.id) {
       case "up":
-        centerdiv.getElementsByClassName("shadow bottom")[0].style["visibility"] = "visible";
+        centerdiv.getElementsByClassName("vis-shadow vis-bottom")[0].style["visibility"] = "visible";
         contentdiv.style["top"] = parseInt(contentdiv.style["top"]) + step + "px";
         if(parseInt(contentdiv.style["top"]) >= 0) {
           contentdiv.style["top"] = "0px";
-          centerdiv.getElementsByClassName("shadow top")[0].style["visibility"] = "hidden";
+          centerdiv.getElementsByClassName("vis-shadow vis-top")[0].style["visibility"] = "hidden";
         }
         break;
       case "down":
-        centerdiv.getElementsByClassName("shadow top")[0].style["visibility"] = "visible";
+        centerdiv.getElementsByClassName("vis-shadow vis-top")[0].style["visibility"] = "visible";
         contentdiv.style["top"] = parseInt(contentdiv.style["top"]) - step + "px";
         if( Math.abs(parseInt(contentdiv.style["top"])) > contentdiv.getBoundingClientRect().height - centerdiv.getBoundingClientRect().height ) {
           contentdiv.style["top"] = contentdiv.getBoundingClientRect().height - centerdiv.getBoundingClientRect().height;
-          centerdiv.getElementsByClassName("shadow bottom")[0].style["visibility"] = "hidden";
+          centerdiv.getElementsByClassName("vis-shadow vis-bottom")[0].style["visibility"] = "hidden";
         }
         break;
       case "left":
@@ -357,7 +360,7 @@ module-type: widget
     var result = timepointList.reduce(addTimeData(self), {data: [], groups: {}, errors: []});
     this.displayedTiddlers = result.data;
     this.timeline.setItems(result.data);
-    var options = [];
+    var options = {};
     if(this.attributes["boxing"] !== "auto") {
       options["height"] = "100%";
     }
@@ -378,7 +381,8 @@ module-type: widget
         theGroups.push({id: g, content: g, title: g});
         var tiddler = $tw.wiki.getTiddler(g);
         if(tiddler && tiddler.getFieldString("color") !== "") {
-          theGroups[theGroups.length-1].style = "border: 3px solid;"
+          theGroups[theGroups.length-1].style = "border-width:3px; border-style:solid;"
+                                              + "border-bottom-width:3px; border-bottom-style:solid;"
                                               + utils.enhancedColorStyle(tiddler.getFieldString("color"));
         }
       }
