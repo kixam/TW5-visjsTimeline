@@ -4,7 +4,7 @@ type: text/vnd.tiddlywiki
 
 !Introduction
 
-This project is a direct continuation of emkay's plugin at [[https://github.com/emkayonline/tw5visjs]]
+This project is a direct continuation of [[emkay's plugin|https://github.com/emkayonline/tw5visjs]].
 
 The `<$visjstimeline>` widget shows a set of tiddlers on a graphical timeline.
 
@@ -23,7 +23,7 @@ If present, the tiddler's `color` field is used to render the corresponding item
 * Additionally the start date or end date field on a tiddler, or the `customTime` attribute, can be set to the word `now`: this will set the date in the timeline to the date at the time the timeline is displayed.
 
 |!Attribute|!Description |
-|`filter`|The TiddlerFilter used to generate the list of tiddlers to display, by default it selects all non system tiddlers|
+|`filter`|The [[TiddlerFilter|http://tiddlywiki.com/#Filters]] used to generate the list of tiddlers to display, by default it selects all non system tiddlers|
 |`startDateField`|A field on each tiddler that defines the start date of a tiddler in the timeline (defaults to the 'created' field)|
 |`endDateField`|A field on each tiddler that defines the end date of a tiddler in the timeline.  This attribute is optional. |
 |`format`|The format for parsing the dates, using the moment.js [[Parse string+format|http://momentjs.com/docs/parsing/string-format/]].|
