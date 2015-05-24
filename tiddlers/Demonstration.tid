@@ -3,4 +3,4 @@ modified: 20150521092149761
 tags: 
 title: Demonstration
 
-<$visjstimeline endDateField="modified" groupTags="[[Group A]]">
+<$visjstimeline endDateField="modified" groupTags="[[Group A]]" navpad>
