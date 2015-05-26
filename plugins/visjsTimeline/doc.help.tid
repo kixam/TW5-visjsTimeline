@@ -16,11 +16,16 @@ Each matching tiddler is shown on the timeline using it's specified start date a
 
 If present, the tiddler's `color` field is used to render the corresponding item or group on the timeline.
 
-!! Validate date format on tiddlers
+!! Valid date format on tiddlers
 * By default dates are parsed using the [[TiddlyWiki|http://tiddlywiki.com/#TiddlyWiki]] date parser (which will handle the `created` and `modified` fields)
 * An override date format can be specified.
 * This format will apply to both the start and end dates, and `customTime`.
 * Additionally the start date or end date field on a tiddler, or the `customTime` attribute, can be set to the word `now`: this will set the date in the timeline to the date at the time the timeline is displayed.
+
+!! Other relevant tiddler fields
+* if present, the `caption` field will be used to represent the tiddler instead of the `title`
+* if present, the `description` field will be used instead of `caption` or `title` to render description text when mouse hovers over the item
+* if present, the `icon` field will be assumed to link to a image tiddler that will be used as the item's icon
 
 |!Attribute|!Description |
 |`filter`|The [[TiddlerFilter|http://tiddlywiki.com/#Filters]] used to generate the list of tiddlers to display, by default it selects all non system tiddlers|

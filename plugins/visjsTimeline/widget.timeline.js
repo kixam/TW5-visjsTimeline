@@ -300,11 +300,18 @@ module-type: widget
         var startDate = dateFieldToDate(tiddlerStartDate, self.format);
         if (!isNaN(startDate)) {
           // var newTimepoint = {id: tiddlerName, content: tiddlerName, start: $tw.utils.formatDateString(startDate, "YYYY-0MM-0DD"), type: 'point'};
-          var caption = theTiddler.fields.caption || tiddlerName;
-          var newTimepoint = {id: tiddlerName, content: caption, title: caption, start: startDate, type: 'point'};
-          if(theTiddler.getFieldString("color") !== "") {
-            newTimepoint.style = "border-color: "+theTiddler.getFieldString("color")+";";
+          var caption = theTiddler.fields.caption || tiddlerName,
+              description = theTiddler.fields.description || caption,
+              color = theTiddler.fields.color || false,
+              style = "border-color: " + color + ";" || "",
+              icon = theTiddler.fields.icon,
+              iconTiddler = $tw.wiki.getTiddler(icon);
+          if(iconTiddler !== undefined) {
+            caption = "<span class='item-icon'" + (color?" style='fill:"+color+"';":"") + ">"
+                    + iconTiddler.fields.text + "</span>&nbsp;"
+                    + caption;
           }
+          var newTimepoint = {id: tiddlerName, content: caption, title: description, style: style, start: startDate, type: 'point'};
           var tiddlerGroup = "";
           if (self.groupField !== undefined) {
             tiddlerGroup = theTiddler.getFieldString(self.groupField);
@@ -354,7 +361,6 @@ module-type: widget
   }
 
   TimelineWidget.prototype.updateTimeline = function() {
-    var d;
     var self = this;
     var timepointList = this.getTimepointList();
     var result = timepointList.reduce(addTimeData(self), {data: [], groups: {}, errors: []});
@@ -377,13 +383,27 @@ module-type: widget
     this.timeline.setOptions(options);
     if (Object.keys(result.groups).length !== 0) {
       var theGroups = [];
-      for (var g in result.groups) {
-        theGroups.push({id: g, content: g, title: g});
-        var tiddler = $tw.wiki.getTiddler(g);
-        if(tiddler && tiddler.getFieldString("color") !== "") {
-          theGroups[theGroups.length-1].style = "border-width:3px; border-style:solid;"
-                                              + "border-bottom-width:3px; border-bottom-style:solid;"
-                                              + utils.enhancedColorStyle(tiddler.getFieldString("color"));
+      for (var group in result.groups) {
+        theGroups.push({id: group, content: group, title: group});
+        var tiddler = $tw.wiki.getTiddler(group);
+        if(tiddler !== undefined) {
+          var caption = "<span>" + (tiddler.fields.caption || group) + "</span>",
+              description = tiddler.fields.description || tiddler.fields.caption || group,
+              color = tiddler.fields.color || false,
+              icon = tiddler.fields.icon,
+              iconTiddler = $tw.wiki.getTiddler(icon);
+          if(color) {
+            theGroups[theGroups.length-1].style = "border-width:3px; border-style:solid;"
+                                                + "border-bottom-width:3px; border-bottom-style:solid;"
+                                                + utils.enhancedColorStyle(tiddler.fields.color);
+          }
+          if(iconTiddler !== undefined) {
+            caption = "<span class='group-icon'" + (color?" style='fill:"+color+"';":"") + ">"
+                    + iconTiddler.fields.text + "</span><br>"
+                    + caption;
+          }
+          theGroups[theGroups.length-1].content = caption;
+          theGroups[theGroups.length-1].title = description;
         }
       }
       this.timeline.setGroups(theGroups);
