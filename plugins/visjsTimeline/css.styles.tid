@@ -28,3 +28,13 @@ type: text/css
   z-index: 9999;
   -moz-user-select: none;
 }
+
+.item-icon svg {
+  height: 14px;
+  width: 14px;
+}
+
+.group-icon svg {
+  height: 16px;
+  width: 16px;
+}
