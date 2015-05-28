@@ -93,9 +93,9 @@ module-type: library
         var dm = $tw.utils.domMaker,
             heading = dm("h1",{text: (title || "Error with vis.js Timeline")}),
             prompt = dm("div",{text: (subtitle || "Please check the following:"), "class": "tc-error-prompt"}),
-            message = dm("div",{innerHTML: message}, {"attributes": {"style": "text-align:left;"}}),
+            message = dm("div",{innerHTML: message, attributes: {style: "text-align: left;"}}),
             button = dm("button",{text: "close"}),
-            form = dm("form",{children: [heading,prompt,message,button], "class": "tc-error-form"});
+            form = dm("form",{children: [heading,prompt,message,button], "class": "tc-error-form", attributes: {style: "background-color: rgb(75, 75, 255); border: 8px solid rgb(0, 0, 255);"}});
         document.body.insertBefore(form,document.body.firstChild);
         form.addEventListener("submit",function(event) {
             document.body.removeChild(form);
