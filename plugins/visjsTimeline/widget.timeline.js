@@ -44,11 +44,8 @@ module-type: widget
         this.sidebar = document.getElementsByClassName("tc-sidebar-scrollable")[0];
         this.isContainedInSidebar = (this.sidebar && this.sidebar.contains(this.parentDomNode));
         if(this.isContainedInSidebar) {
-          this.parentDomNode.style["margin"]="0";
+          this.parentDomNode.style["margin-top"]="-14px";
           this.parentDomNode.style["padding-right"]="2px";
-          this.parentDomNode.parentNode.parentNode.style["margin-top"]="0";
-        } else {
-          this.parentDomNode.style["padding-bottom"]="2px";
         }
         parent.style["width"] = this.getAttribute("width", "100%");
         this.handleResizeEvent = this.handleResizeEvent.bind(this);
