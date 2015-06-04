@@ -27,16 +27,23 @@ If present, the tiddler's `color` field is used to render the corresponding item
 * if present, the `description` field will be used instead of `caption` or `title` to render description text when mouse hovers over the item
 * if present, the `icon` field will be assumed to link to a image tiddler that will be used as the item's icon
 
+!! All the following attributes are optional
 |!Attribute|!Description |
-|`filter`|The [[TiddlerFilter|http://tiddlywiki.com/#Filters]] used to generate the list of tiddlers to display, by default it selects all non system tiddlers|
-|`startDateField`|A field on each tiddler that defines the start date of a tiddler in the timeline (defaults to the 'created' field)|
-|`endDateField`|A field on each tiddler that defines the end date of a tiddler in the timeline.  This attribute is optional. |
-|`format`|The format for parsing the dates, using the moment.js [[Parse string+format|http://momentjs.com/docs/parsing/string-format/]].|
-|`groupField`|A field whose value will be used to group tiddlers on the timeline|
-|`customTime`|A date at which a vertical bar will be shown on the timeline (In the same format as start/endDateField fields)|
-|`groupTags`|If `groupField` field is not used and if a filtered tiddler has a tag among the given [[Title List|http://tiddlywiki.com/#Title%20List]], this tag will be used as the item's group|
-|`boxing`|If set to `static` (default), the containing box will be static. If set to `auto`, the timeline will automatically adjust its size to the items to show|
-|`navpad`|If set, a navpad will be shown (default: not set)|
+| `filter` |The [[TiddlerFilter|http://tiddlywiki.com/#Filters]] used to generate the list of tiddlers to display, by default it selects all non system tiddlers (`!is[system]`).|
+| `startDateField` |A field on each tiddler that defines the start date of a tiddler in the timeline (defaults to the 'created' field).|
+| `endDateField` |A field on each tiddler that defines the end date of a tiddler in the timeline.|
+| `format` |The format for parsing the dates, using the moment.js [[Parse string+format|http://momentjs.com/docs/#/parsing/string-format/]].|
+| `groupField` |A field whose value will be used to group tiddlers on the timeline.|
+| `customTime` |A date at which a vertical bar will be shown on the timeline (In the same format as start/endDateField fields).|
+| `groupTags` |If `groupField` field is not used and if a filtered tiddler has a tag among the given [[Title List|http://tiddlywiki.com/#Title%20List]], this tag will be used as the item's group.|
+| `boxing` |If set to `static` (default), the containing box will be static. If set to `auto`, the timeline will automatically adjust its size to the items to show.|
+| `navpad` |If set, a navpad will be shown (default: not set).|
+| `config` |Title of a tiddler which contains configuration options for the timeline in [[JSON format|http://tiddlywiki.com/#JSONTiddlers]], as per [[vis.js documentation|http://visjs.org/docs/timeline/#Configuration_Options]].|
+
+!!!Notes about the `config` attribute
+* for the sake of integration, not all the options are available, please see [[the whitelist|$:/plugins/kixam/timeline/validOptions.json]];
+* the `navpad` is not affected by options passed through this mechanism, except for these listed below the `whitelist` under the name `navbarReactOptions`;
+* if you create or change options in your config tiddler after the timeline was drawn, you may need to have it redrawn, e.g. by editing/canceling the tiddler containing the timeline, or by changing sidebar panel back and forth.
 
 The content of the `<$visjstimeline>` widget is ignored.
 
