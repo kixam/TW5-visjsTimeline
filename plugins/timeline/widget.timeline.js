@@ -373,8 +373,7 @@ module-type: widget
     if (this.customTime !== undefined) {
       var d = dateFieldToDate(this.customTime, this.format);
       if (d !== undefined) {
-        options["showCustomTime"] = true;
-        this.timeline.setCustomTime(d);
+        this.timeline.addCustomTime(d);
       }
     }
     this.timeline.setOptions(options);
