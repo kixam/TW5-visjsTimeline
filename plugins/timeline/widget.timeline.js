@@ -30,6 +30,7 @@ module-type: widget
   TimelineWidget.prototype.render = function(parent,nextSibling) {
     this.parentDomNode = parent;
     this.computeAttributes();
+    this.options = {};
 
     var attrParseWorked = this.execute();
     if (attrParseWorked === undefined) {
@@ -52,14 +53,24 @@ module-type: widget
         window.addEventListener("resize", this.handleResizeEvent, false);
         this.handleResizeEvent();
         // --
+        this.options["height"] = "100%";
       }
 
       this.createTimeline();
+
+      if(this.attributes["navpad"] !== undefined) {
+        this.options["orientation"] = "top";
+      }
+
+      // default options must be set at this point, as we might add/change options from user through 'config'
       this.updateTimeline();
 
       if(this.attributes["navpad"] !== undefined) {
-        this.createNavpad();
+        this.createNavpad(); // must be created only after all options were processed
+                             // e.g. for clickToUse, we observe vis-overlay, which will not exist if option is not processed
       }
+
+
     } else {
       utils.dispError(this.parseTreeNode.type+": Unexpected attribute(s) "+attrParseWorked.join(", "));
       this.refresh = function() {}; // disable refresh of this as it won't work with incorrrect attributes
@@ -77,7 +88,8 @@ module-type: widget
            customTime:  { type: "string", defaultValue: undefined},
            groupTags: {type: "string", defaultValue: undefined},
            boxing: {type: "string", defaultValue: "static"},
-           navpad: {type: "string", defaultValue: undefined}
+           navpad: {type: "string", defaultValue: undefined},
+           config: {type: "string", defaultValue: undefined}
            });
 
     if ((attrParseWorked === undefined) && (this.filter)) {
@@ -130,7 +142,6 @@ module-type: widget
 
     this.handleResizeEvent();
   };
-
 
   TimelineWidget.prototype.createTimeline = function() {
     var data = [];
@@ -191,8 +202,10 @@ module-type: widget
       navpad.childNodes[i].addEventListener("click", this.handleNavpadClick, false);
     }
 
-    var top = this.timelineHolder.getElementsByClassName("vis-panel vis-center")[0].getElementsByClassName("vis-shadow vis-top")[0];
-    var bottom = this.timelineHolder.getElementsByClassName("vis-panel vis-center")[0].getElementsByClassName("vis-shadow vis-bottom")[0];
+    var panel = this.timelineHolder.getElementsByClassName("vis-panel vis-center")[0];
+    var top = panel.getElementsByClassName("vis-shadow vis-top")[0];
+    var bottom = panel.getElementsByClassName("vis-shadow vis-bottom")[0];
+    var overlay = this.timelineHolder.getElementsByClassName("vis-overlay")[0];
 
     this.handleItemsVisibilityChanged = this.handleItemsVisibilityChanged.bind(this);
     var self = this;
@@ -202,14 +215,28 @@ module-type: widget
       }});
     observer.observe(top, {attributes: true, subtree: false});
     observer.observe(bottom, {attributes: true, subtree: false});
+    if(overlay !== undefined) { // clickToUse === true
+      observer.observe(overlay, {attributes: true, subtree: false});
+      navpad.style["visibility"] = "hidden";
+    }
   }
 
   TimelineWidget.prototype.handleItemsVisibilityChanged = function(mutation) {
     if(mutation.attributeName === "style") {
-      var cls = "vis-button " + ( (' ' + mutation.target.className + ' ').indexOf(' vis-top ') > -1 ? "vis-up":"vis-down" );
-      var button = this.timelineHolder.getElementsByClassName(cls)[0];
-      if(button !== undefined) {
-        button.style["visibility"] = mutation.target.style["visibility"];
+      if((' ' + mutation.target.className + ' ').indexOf(' vis-overlay ') > -1) {
+        // whole navpad visibility
+        var timeline = this.timelineHolder.getElementsByClassName("vis-timeline")[0];
+        var navpad = this.timelineHolder.getElementsByClassName("navpad")[0];
+        if(navpad !== undefined) {
+          navpad.style["visibility"] = (mutation.target.style["display"] === "none" ? "visible":"hidden");
+        }
+      } else {
+        // up and down buttons visibility
+        var cls = "vis-button " + ( (' ' + mutation.target.className + ' ').indexOf(' vis-top ') > -1 ? "vis-up":"vis-down" );
+        var button = this.timelineHolder.getElementsByClassName(cls)[0];
+        if(button !== undefined) {
+          button.style["visibility"] = mutation.target.style["visibility"];
+        }
       }
     }
   }
@@ -267,7 +294,7 @@ module-type: widget
         this.timeline.fit();
         break;
       default:
-        dispError("No such action: " + action);
+        utils.dispError("No such action: " + action);
     }
   }
 
@@ -366,20 +393,19 @@ module-type: widget
     var result = timepointList.reduce(addTimeData(self), {data: [], groups: {}, errors: []});
     this.displayedTiddlers = result.data;
     this.timeline.setItems(result.data);
-    var options = {};
-    if(this.attributes["boxing"] !== "auto") {
-      options["height"] = "100%";
-    }
-    if(this.attributes["navpad"] !== undefined) {
-      options["orientation"] = "top";
-    }
     if (this.customTime !== undefined) {
       var d = dateFieldToDate(this.customTime, this.format);
       if (d !== undefined) {
         this.timeline.addCustomTime(d);
       }
     }
-    this.timeline.setOptions(options);
+    // override default options with these provided by the user, if any
+    var config = $tw.wiki.getTiddlerData(this.attributes["config"], {});
+    var whitelist = $tw.wiki.getTiddlerData("$:/plugins/kixam/timeline/validOptions.json", {"whitelist":[]}).whitelist;
+    for(var opt in config) {
+      if(whitelist.indexOf(opt) > -1) this.options[opt] = config[opt];
+    }
+    this.timeline.setOptions(this.options);
     if (Object.keys(result.groups).length !== 0) {
       var theGroups = [];
       for (var group in result.groups) {
