@@ -198,16 +198,19 @@ module-type: widget
     var self = this;
     var observer = new MutationObserver(function(mutations) {
       for(var i=0; i<mutations.length; i++) {
-        self.handleItemsVisibilityChanged(self,mutations[i]);
+        self.handleItemsVisibilityChanged(mutations[i]);
       }});
     observer.observe(top, {attributes: true, subtree: false});
     observer.observe(bottom, {attributes: true, subtree: false});
   }
 
-  TimelineWidget.prototype.handleItemsVisibilityChanged = function(self,mutation) {
+  TimelineWidget.prototype.handleItemsVisibilityChanged = function(mutation) {
     if(mutation.attributeName === "style") {
       var cls = "vis-button " + ( (' ' + mutation.target.className + ' ').indexOf(' vis-top ') > -1 ? "vis-up":"vis-down" );
-      self.timelineHolder.getElementsByClassName(cls)[0].style["visibility"] = mutation.target.style["visibility"];
+      var button = this.timelineHolder.getElementsByClassName(cls)[0];
+      if(button !== undefined) {
+        button.style["visibility"] = mutation.target.style["visibility"];
+      }
     }
   }
 
