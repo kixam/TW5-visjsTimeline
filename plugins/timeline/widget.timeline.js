@@ -429,7 +429,7 @@ module-type: widget
     }
     // override default options with these provided by the user, if any
     var config = $tw.wiki.getTiddlerData(this.attributes["config"], {});
-    var whitelist = $tw.wiki.getTiddlerData("$:/plugins/kixam/timeline/validOptions.json", {"whitelist":[]}).whitelist;
+    var whitelist = $tw.wiki.getTiddlerData("$:/plugins/kixam/timeline/validOptions", {"whitelist":[]}).whitelist;
     if(this.attributes["persistent"] !== undefined
     && this.tiddler.fields["timeline:start"] !== undefined
     && this.tiddler.fields["timeline:end"] !== undefined) {
