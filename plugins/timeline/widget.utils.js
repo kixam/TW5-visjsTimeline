@@ -57,7 +57,6 @@ module-type: library
     return undefined;
   }
 
-
   function displayTiddler(self,toTiddlerTitle){
     var domTiddler = self.parentDomNode.parentNode;
     var bounds = domTiddler.getBoundingClientRect();
@@ -110,9 +109,21 @@ module-type: library
     }
   }
 
+  function setTiddlerField(tiddlerTitle, field, value) {
+     if(tiddlerTitle && field) {
+       var fields = {
+         title: tiddlerTitle
+       };
+       fields[field] = value;
+       var tiddler = $tw.wiki.getTiddler(tiddlerTitle, true);
+       $tw.wiki.addTiddler(new $tw.Tiddler(tiddler, fields));
+     }
+   }
+
   exports.parseWidgetAttributes = parseWidgetAttributes;
   exports.displayTiddler = displayTiddler;
   exports.enhancedColorStyle = enhancedColorStyle;
   exports.dispError = dispError;
+  exports.setTiddlerField = setTiddlerField;
 }
 ());

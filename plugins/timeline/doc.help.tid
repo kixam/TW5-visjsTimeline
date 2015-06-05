@@ -39,6 +39,7 @@ If present, the tiddler's `color` field is used to render the corresponding item
 | `boxing` |If set to `static` (default), the containing box will be static. If set to `auto`, the timeline will automatically adjust its size to the items to show.|
 | `navpad` |If set, a navpad will be shown (default: not set).|
 | `config` |Title of a tiddler which contains configuration options for the timeline in [[JSON format|http://tiddlywiki.com/#JSONTiddlers]], as per [[vis.js documentation|http://visjs.org/docs/timeline/#Configuration_Options]].|
+| `persistent` |If set, the x-axis range will become persistent. Uses (creates, if needed) 2 fields of the tiddler containing the timeline, namely `timeline:start` and `timeline:end`.|
 
 !!!Notes about the `config` attribute
 * for the sake of integration, not all the options are available, please see [[the whitelist|$:/plugins/kixam/timeline/validOptions.json]];
