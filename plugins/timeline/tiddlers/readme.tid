@@ -1,0 +1,11 @@
+title: $:/plugins/kixam/timeline/readme
+
+! vis.js Timeline
+
+A timeline plugin for [[TiddlyWiki|http://tiddlywiki.com]] 5, using [[vis.js|http://visjs.org]].
+
+---
+
+Continued from [[emkay's plugin|https://github.com/emkayonline/tw5visjs]].
+
+Depends on [[felixhayashi's vis.js plugin|https://github.com/felixhayashi/TW5-Vis.js]] and [[moment.js plugin|https://github.com/kixam/TW5-moment.js]], which are available, along with installation instructions, on the [[demo site|http://kixam.github.io/TW5-visjsTimeline]].

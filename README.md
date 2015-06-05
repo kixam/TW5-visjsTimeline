@@ -1,8 +1,8 @@
 # TW5-visjsTimeline
-Timeline plugin for TiddlyWiki 5 using vis.js
+<h1>vis.js Timeline</h1>
 
-Continued from emkay's plugin at https://github.com/emkayonline/tw5visjs
+A timeline plugin for <a href="http://tiddlywiki.com">TiddlyWiki</a> 5, using <a href="http://visjs.org">vis.js</a>.
 
-Depends on felixhayashi's vis.js plugin at https://github.com/felixhayashi/TW5-Vis.js and moment.js plugin at https://github.com/kixam/TW5-moment.js
+Continued from <a href="https://github.com/emkayonline/tw5visjs">emkay's plugin</a>.
 
-For a demo, more information, or installation, visit http://kixam.github.io/TW5-visjsTimeline
+Depends on <a href="https://github.com/felixhayashi/TW5-Vis.js">felixhayashi's vis.js plugin</a> and <a href="https://github.com/kixam/TW5-moment.js">moment.js plugin</a>, which are available, along with installation instructions, on the <a href="http://kixam.github.io/TW5-visjsTimeline">demo site</a>.
