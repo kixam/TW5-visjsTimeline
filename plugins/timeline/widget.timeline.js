@@ -22,6 +22,7 @@ module-type: widget
   var vis = require("$:/plugins/felixhayashi/vis/vis.js");
 
   var TimelineWidget = function(parseTreeNode,options) {
+    Widget.call(this);
     this.initialise(parseTreeNode,options);
   };
 
@@ -31,16 +32,16 @@ module-type: widget
     this.parentDomNode = parent;
     this.computeAttributes();
     this.options = {};
+    this.tiddler = $tw.wiki.getTiddler(this.getVariable("currentTiddler"));
 
     var attrParseWorked = this.execute();
     if (attrParseWorked === undefined) {
-      var timelineHolder = $tw.utils.domMaker("div",{});
-      parent.insertBefore(timelineHolder,nextSibling);
-      this.domNodes.push(timelineHolder);
-      this.timelineHolder = timelineHolder;
+      this.timelineHolder = $tw.utils.domMaker("div",{});
+      parent.insertBefore(this.timelineHolder,nextSibling);
+      this.domNodes.push(this.timelineHolder);
 
       if(this.attributes["boxing"] !== "auto") {
-        timelineHolder.style["height"]="100%";
+        this.timelineHolder.style["height"]="100%";
         // -- adapted from felixhayashi's tiddlymap in widget.map.js
         this.sidebar = document.getElementsByClassName("tc-sidebar-scrollable")[0];
         this.isContainedInSidebar = (this.sidebar && this.sidebar.contains(this.parentDomNode));
@@ -89,7 +90,8 @@ module-type: widget
            groupTags: {type: "string", defaultValue: undefined},
            boxing: {type: "string", defaultValue: "static"},
            navpad: {type: "string", defaultValue: undefined},
-           config: {type: "string", defaultValue: undefined}
+           config: {type: "string", defaultValue: undefined},
+           persistent: {type: "string", defaultValue: undefined},
            });
 
     if ((attrParseWorked === undefined) && (this.filter)) {
@@ -102,7 +104,7 @@ module-type: widget
   TimelineWidget.prototype.getTimepointList = function(changedTiddlers) {
     var tiddlerList = [];
     // process the filter into an array of tiddler titles
-    tiddlerList = this.compiledFilter.call(null, changedTiddlers, this.tiddler);
+    tiddlerList = this.compiledFilter.call(null, changedTiddlers, null);
     // If filter is a list of tiddlers it will return tiddlers even if they are not in changed Tiddlers
     if (changedTiddlers !== undefined) {
       tiddlerList = tiddlerList.filter(function (e) { return changedTiddlers[e];});
@@ -139,7 +141,6 @@ module-type: widget
       this.updateTimeline();
       return true;
     }
-
     this.handleResizeEvent();
   };
 
@@ -161,7 +162,33 @@ module-type: widget
         }
       }
     });
+    if(this.attributes["persistent"] !== undefined) {
+      // apply saved x-axis range
+      var start = moment(this.tiddler.fields["timeline:start"]);
+      var end = moment(this.tiddler.fields["timeline:end"]);
+      if(start.isValid() && end.isValid()) {
+        this.options.start = start.toDate();
+        this.options.end = end.toDate();
+      }
+
+      // monitor and save changes in x-axis range
+      this.writeRange = false;
+      this.handleRangeChanged = this.handleRangeChanged.bind(this);
+      this.timeline.on('rangechanged', this.handleRangeChanged);
+    }
   };
+
+  TimelineWidget.prototype.handleRangeChanged = function(properties) {
+    if(properties.byUser || this.writeRange) {
+      var start = moment(properties.start);
+      var end = moment(properties.end);
+      if(start.isValid() && end.isValid()) {
+        utils.setTiddlerField(this.tiddler.fields.title, "timeline:start", start.format());
+        utils.setTiddlerField(this.tiddler.fields.title, "timeline:end", end.format());
+      }
+    }
+    this.writeRange = false;
+  }
 
   // -- adapted from felixhayashi's tiddlymap in widget.map.js
   TimelineWidget.prototype.handleResizeEvent = function(event) {
@@ -249,6 +276,7 @@ module-type: widget
 
     var centerdiv = this.timelineHolder.getElementsByClassName("vis-panel vis-center")[0];
     var contentdiv = centerdiv.getElementsByClassName("vis-content")[0];
+    this.writeRange = true; // handle persistence
     switch (event.target.id) {
       case "up":
         centerdiv.getElementsByClassName("vis-shadow vis-bottom")[0].style["visibility"] = "visible";
@@ -402,6 +430,12 @@ module-type: widget
     // override default options with these provided by the user, if any
     var config = $tw.wiki.getTiddlerData(this.attributes["config"], {});
     var whitelist = $tw.wiki.getTiddlerData("$:/plugins/kixam/timeline/validOptions.json", {"whitelist":[]}).whitelist;
+    if(this.attributes["persistent"] !== undefined
+    && this.tiddler.fields["timeline:start"] !== undefined
+    && this.tiddler.fields["timeline:end"] !== undefined) {
+      whitelist.start = undefined;
+      whitelist.end = undefined;
+    }
     for(var opt in config) {
       if(whitelist.indexOf(opt) > -1) this.options[opt] = config[opt];
     }
@@ -436,7 +470,11 @@ module-type: widget
     if (result.errors.length !== 0) {
       utils.dispError(this.parseTreeNode.type+": <ul><li>"+result.errors.join("</li><li>")+"</li></ul>");
     }
-    this.timeline.fit();
+    if(this.attributes["persistent"] === undefined
+    || this.tiddler.fields["timeline:start"] === undefined
+    || this.tiddler.fields["timeline:end"] === undefined) {
+      this.timeline.fit();
+    }
   };
 
   exports.visjstimeline = TimelineWidget;
