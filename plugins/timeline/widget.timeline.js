@@ -128,7 +128,6 @@ module-type: widget
      */
   TimelineWidget.prototype.refresh = function(changedTiddlers) {
     var changedAttributes = this.computeAttributes();
-    console.log(changedAttributes);
     if(changedAttributes.filter
     || changedAttributes.startDateField
     || changedAttributes.endDateField
@@ -458,12 +457,12 @@ module-type: widget
     if (Object.keys(result.groups).length !== 0) {
       var theGroups = [];
       for (var group in result.groups) {
+        theGroups.push({id: group, content: group, title: group});
         if(group === "Global") {
-          theGroups.push({id: group, content: "&mdash; Global &mdash;", title: group});
-          theGroups[theGroups.length-1].style = "background-color:rgba(0,0,0,0); font-style:italic;";
+          theGroups[theGroups.length-1].content = "&mdash; Global &mdash;";
+          theGroups[theGroups.length-1].style = ";background-color:rgba(0,0,0,0); font-style:italic;";
         }
         else {
-          theGroups.push({id: group, content: group, title: group});
           var tiddler = $tw.wiki.getTiddler(group);
           if(tiddler !== undefined) {
             var caption = "<span>" + (tiddler.fields.caption || group) + "</span>",
