@@ -33,6 +33,7 @@ module-type: widget
     this.computeAttributes();
     this.options = {};
     this.tiddler = $tw.wiki.getTiddler(this.getVariable("currentTiddler"));
+    this.hasCustomTime = false;
 
     var attrParseWorked = this.execute();
     if (attrParseWorked === undefined) {
@@ -431,9 +432,14 @@ module-type: widget
     this.displayedTiddlers = result.data;
     this.timeline.setItems(result.data);
     if (this.customTime !== undefined) {
+      if(this.hasCustomTime) {
+        this.timeline.removeCustomTime();
+        this.hasCustomTime = false;
+      }
       var d = dateFieldToDate(this.customTime, this.format);
       if (d !== undefined) {
         this.timeline.addCustomTime(d);
+        this.hasCustomTime = true;
       }
     }
     // override default options with these provided by the user, if any
