@@ -127,7 +127,16 @@ module-type: widget
      */
   TimelineWidget.prototype.refresh = function(changedTiddlers) {
     var changedAttributes = this.computeAttributes();
-    if(changedAttributes.filter || changedAttributes.startDateField || changedAttributes.endDateField || changedAttributes.groupField) {
+    console.log(changedAttributes);
+    if(changedAttributes.filter
+    || changedAttributes.startDateField
+    || changedAttributes.endDateField
+    || changedAttributes.groupField
+    || changedAttributes.customTime
+    || changedAttributes.groupTags
+    || changedAttributes.boxing
+    || changedAttributes.navpad
+    || changedAttributes.config) {
       this.refreshSelf();
       this.updateTimeline();
       return true;
