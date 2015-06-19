@@ -460,7 +460,7 @@ module-type: widget
         theGroups.push({id: group, content: group, title: group});
         if(group === "Global") {
           theGroups[theGroups.length-1].content = "&mdash; Global &mdash;";
-          theGroups[theGroups.length-1].style = ";background-color:rgba(0,0,0,0); font-style:italic;";
+          theGroups[theGroups.length-1].style = "background-color:rgba(0,0,0,0); font-style:italic;";
         }
         else {
           var tiddler = $tw.wiki.getTiddler(group);
