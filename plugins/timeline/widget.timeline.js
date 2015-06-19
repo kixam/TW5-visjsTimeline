@@ -452,26 +452,32 @@ module-type: widget
     if (Object.keys(result.groups).length !== 0) {
       var theGroups = [];
       for (var group in result.groups) {
-        theGroups.push({id: group, content: group, title: group});
-        var tiddler = $tw.wiki.getTiddler(group);
-        if(tiddler !== undefined) {
-          var caption = "<span>" + (tiddler.fields.caption || group) + "</span>",
-              description = tiddler.fields.description || tiddler.fields.caption || group,
-              color = tiddler.fields.color || false,
-              icon = tiddler.fields.icon,
-              iconTiddler = $tw.wiki.getTiddler(icon);
-          if(color) {
-            theGroups[theGroups.length-1].style = "border-width:3px; border-style:solid;"
-                                                + "border-bottom-width:3px; border-bottom-style:solid;"
-                                                + utils.enhancedColorStyle(tiddler.fields.color);
+        if(group === "Global") {
+          theGroups.push({id: group, content: "&mdash; Global &mdash;", title: group});
+          theGroups[theGroups.length-1].style = "background-color:rgba(0,0,0,0); font-style:italic;";
+        }
+        else {
+          theGroups.push({id: group, content: group, title: group});
+          var tiddler = $tw.wiki.getTiddler(group);
+          if(tiddler !== undefined) {
+            var caption = "<span>" + (tiddler.fields.caption || group) + "</span>",
+                description = tiddler.fields.description || tiddler.fields.caption || group,
+                color = tiddler.fields.color || false,
+                icon = tiddler.fields.icon,
+                iconTiddler = $tw.wiki.getTiddler(icon);
+            if(color) {
+              theGroups[theGroups.length-1].style = "border-width:3px; border-style:solid;"
+                                                  + "border-bottom-width:3px; border-bottom-style:solid;"
+                                                  + utils.enhancedColorStyle(tiddler.fields.color);
+            }
+            if(iconTiddler !== undefined) {
+              caption = "<span class='group-icon'" + (color?" style='fill:"+color+"';":"") + ">"
+                      + iconTiddler.fields.text + "</span><br>"
+                      + caption;
+            }
+            theGroups[theGroups.length-1].content = caption;
+            theGroups[theGroups.length-1].title = description;
           }
-          if(iconTiddler !== undefined) {
-            caption = "<span class='group-icon'" + (color?" style='fill:"+color+"';":"") + ">"
-                    + iconTiddler.fields.text + "</span><br>"
-                    + caption;
-          }
-          theGroups[theGroups.length-1].content = caption;
-          theGroups[theGroups.length-1].title = description;
         }
       }
       this.timeline.setGroups(theGroups);
