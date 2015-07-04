@@ -218,7 +218,7 @@ module-type: widget
   // --
 
   TimelineWidget.prototype.createNavpad = function() {
-    var navpad = $tw.utils.domMaker("div",{class: "vis-navigation navpad"});
+    var navpad = $tw.utils.domMaker("div",{class: "vis-navigation visjstimeline-navpad"});
 
     this.timelineHolder.className = "vis-network";
     this.timelineHolder.appendChild(navpad);
