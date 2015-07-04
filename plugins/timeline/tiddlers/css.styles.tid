@@ -24,9 +24,32 @@ type: text/css
   position: relative;
 }
 
-.visjstimeline-navpad div {
+.visjstimeline-navpad div, .visjstimeline-warning {
   z-index: 9999;
   -moz-user-select: none;
+}
+
+.visjstimeline-warning {
+  fill: #FFFFFF;
+  background-color: #EE0000;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.75);
+  top: 15px;
+  right: 15px;
+  width: 34px;
+  height: 34px;
+  position: absolute;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.visjstimeline-warning:hover {
+  background-color: #FF0000;
+}
+
+.visjstimeline-warning svg {
+  width: 32px;
+  height: 32px;
+  margin: 1px;
 }
 
 .item-icon svg {
