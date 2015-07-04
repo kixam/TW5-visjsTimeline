@@ -33,11 +33,12 @@ module-type: widget
     this.computeAttributes();
     this.options = {};
     this.tiddler = $tw.wiki.getTiddler(this.getVariable("currentTiddler"));
+    this.warningTiddlerTitle = "$:/temp/visjstimeline-warning/" + this.tiddler.fields.title
     this.hasCustomTime = false;
 
     var attrParseWorked = this.execute();
     if (attrParseWorked === undefined) {
-      this.timelineHolder = $tw.utils.domMaker("div",{});
+      this.timelineHolder = $tw.utils.domMaker("div",{attributes:{style: "position: relative;"}});
       parent.insertBefore(this.timelineHolder,nextSibling);
       this.domNodes.push(this.timelineHolder);
 
@@ -57,6 +58,8 @@ module-type: widget
         // --
         this.options["height"] = "100%";
       }
+
+      this.createWarningButton();
 
       this.createTimeline();
 
@@ -217,6 +220,42 @@ module-type: widget
   };
   // --
 
+  TimelineWidget.prototype.createWarningButton = function() {
+    var button = $tw.utils.domMaker("div", {innerHTML: $tw.wiki.getTiddlerText("$:/core/images/warning","Warning"), class: "visjstimeline-warning", attributes: {title: "Not all tiddlers could be rendered",  style: "visibility: hidden"}});
+
+    this.timelineHolder.appendChild(button);
+    this.domNodes.push(button);
+
+    this.handleWarningClick = this.handleWarningClick.bind(this);
+    button.addEventListener("click", this.handleWarningClick, false);
+  }
+
+  TimelineWidget.prototype.handleWarningClick = function(event) {
+    utils.displayTiddler(this, this.warningTiddlerTitle);
+  }
+
+  TimelineWidget.prototype.appendWarning = function(message) {
+    if($tw.wiki.getTiddler(this.warningTiddlerTitle) === undefined) {
+      var format = "Using ";
+      if(this.format === undefined) {
+        format += "[[TW5 date format|http://tiddlywiki.com/#DateFormat]]";
+      } else {
+        format += "[[moment.js format|http://momentjs.com/docs/#/parsing/string-format/]]: `" + this.format + "`";
+      }
+      var fields = {title: this.warningTiddlerTitle, text: "!!!Problems found while rendering `<$visjstimeline/>` in [["+this.tiddler.fields.title+"]]\n\n" + format + "\n\n|!Tiddler|!Problem|!Result|\n"};
+      $tw.wiki.addTiddler(new $tw.Tiddler(fields));
+    }
+    utils.setTiddlerField(this.warningTiddlerTitle,"text", $tw.wiki.getTiddlerText(this.warningTiddlerTitle) + message + "\n");
+    var button = this.timelineHolder.getElementsByClassName("visjstimeline-warning")[0];
+    button.style["visibility"] = "visible";
+  }
+
+  TimelineWidget.prototype.resetWarning = function() {
+    $tw.wiki.deleteTiddler(this.warningTiddlerTitle);
+    var button = this.timelineHolder.getElementsByClassName("visjstimeline-warning")[0];
+    button.style["visibility"] = "hidden";
+  }
+
   TimelineWidget.prototype.createNavpad = function() {
     var navpad = $tw.utils.domMaker("div",{class: "vis-navigation visjstimeline-navpad"});
 
@@ -331,7 +370,7 @@ module-type: widget
         this.timeline.fit();
         break;
       default:
-        utils.dispError("No such action: " + action);
+        this.dispError("No such navtab action: " + action);
     }
   }
 
@@ -395,39 +434,47 @@ module-type: widget
           if (self.endDateField !== undefined ) {
             var tiddlerEndDate = theTiddler.getFieldString(self.endDateField);
             var endDate = dateFieldToDate(tiddlerEndDate, self.format);
-            if (!isNaN(endDate)) {
-              // newTimepoint.end = $tw.utils.formatDateString(endDate, "YYYY-0MM-0DD");
-              if (endDate < startDate) {
-                currentErrors.push("End date ("+tiddlerEndDate+") on "+tiddlerName+"."+self.endDateField+" is before start date ("+tiddlerStartDate+") on "+tiddlerName+"."+self.startDateField);
+            if(!isNaN(endDate) && endDate < startDate) {
+              currentErrors.push("| [[" + tiddlerName + "]] |End date \"" + tiddlerEndDate + "\" (field `" + self.endDateField + "`) is before start date \"" + tiddlerStartDate + "\" (field `" + self.startDateField + "`)|Used start date as end date|");
+              endDate = startDate;
+            }
+            else if(isNaN(endDate)) {
+              if(tiddlerEndDate === "") {
+                currentErrors.push("| [[" + tiddlerName + "]] |End date field `" + self.endDateField + "` is empty or does not exist|Used start date as end date|");
               } else {
-                newTimepoint.end = endDate;
-                if (newTimepoint.end.getTime() != newTimepoint.start.getTime()) {
-                  newTimepoint.type = 'range';
-                  if(theTiddler.getFieldString("color") !== "") {
-                    newTimepoint.style += "border-width: 3px;"
-                                        + utils.enhancedColorStyle(theTiddler.getFieldString("color"));
-                  }
-                }
+                currentErrors.push("| [[" + tiddlerName + "]] |Could not parse end date \"" + tiddlerEndDate + "\" from field `" + self.endDateField + "`|Used start date as end date|");
               }
-            } else {
-              currentErrors.push("Not a endDate ("+tiddlerEndDate+") on "+tiddlerName+"."+self.endDateField);
+              endDate = startDate;
+            }
+
+            newTimepoint.end = endDate;
+            if (newTimepoint.end.getTime() != newTimepoint.start.getTime()) {
+              newTimepoint.type = 'range';
+              if(theTiddler.getFieldString("color") !== "") {
+                newTimepoint.style += "border-width: 3px;" + utils.enhancedColorStyle(theTiddler.getFieldString("color"));
+              }
             }
           }
           currentData.push(newTimepoint);
         } else {
-          currentErrors.push("Not a startDate ("+tiddlerStartDate+") on "+tiddlerName+"."+self.startDateField);
+          if(tiddlerStartDate === "") {
+            currentErrors.push("| [[" + tiddlerName + "]] |Start date field `" + self.startDateField + "` is empty or does not exist|Not rendered|");
+          } else {
+            currentErrors.push("| [[" + tiddlerName + "]] |Could not parse start date \"" + tiddlerStartDate + "\" from field `" + self.startDateField + "`|Not rendered|");
+          }
         }
       } else {
-        currentErrors.push("Unknown tiddler "+tiddlerName);
+        currentErrors.push("| [[" + tiddlerName + "]] |Tiddler was not found|Not rendered|");
       }
       return {data: currentData, groups: currentGroups, errors: currentErrors};
     };
   }
 
   TimelineWidget.prototype.updateTimeline = function() {
-    var self = this;
+    this.resetWarning();
+
     var timepointList = this.getTimepointList();
-    var result = timepointList.reduce(addTimeData(self), {data: [], groups: {}, errors: []});
+    var result = timepointList.reduce(addTimeData(this), {data: [], groups: {}, errors: []});
     this.displayedTiddlers = result.data;
     this.timeline.setItems(result.data);
     if (this.customTime !== undefined) {
@@ -487,8 +534,8 @@ module-type: widget
       }
       this.timeline.setGroups(theGroups);
     }
-    if (result.errors.length !== 0) {
-      utils.dispError(this.parseTreeNode.type+": <ul><li>"+result.errors.join("</li><li>")+"</li></ul>");
+    for(var i=0; i<result.errors.length; i++) {
+      this.appendWarning(result.errors[i]);
     }
     if(this.attributes["persistent"] === undefined
     || this.tiddler.fields["timeline:start"] === undefined
