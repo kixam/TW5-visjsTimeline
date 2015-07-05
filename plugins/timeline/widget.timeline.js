@@ -18,6 +18,9 @@ module-type: widget
 
   var Widget = require("$:/core/modules/widgets/widget.js").widget;
   var moment = require("$:/plugins/kixam/moment/moment.js");
+  if(typeof window !== 'undefined' && typeof window.moment !== 'function') {
+    window.moment = moment;
+  }
   var utils = require("$:/plugins/kixam/timeline/widget.utils.js");
   var vis = require("$:/plugins/felixhayashi/vis/vis.js");
 
@@ -66,7 +69,6 @@ module-type: widget
       if(this.attributes["navpad"] !== undefined) {
         this.options["orientation"] = "top";
       }
-
       // default options must be set at this point, as we might add/change options from user through 'config'
       this.updateTimeline();
 
@@ -472,6 +474,20 @@ module-type: widget
 
   TimelineWidget.prototype.updateTimeline = function() {
     this.resetWarning();
+
+    var langprefix = "$:/languages/".length,
+        lang = $tw.wiki.getTiddlerText("$:/language").substring(langprefix, langprefix + 2);
+    if(lang === "zh") {
+      // TW5 does not use standard codes for Chinese
+      var suffix = $tw.wiki.getTiddlerText("$:/language");
+      suffix = suffix.substring(suffix.length-1);
+      if(suffix === "s") {
+        lang = "zh-cn"; //simplified
+      } else {
+        lang = "zh-tw"; //traditional
+      }
+    }
+    this.options["locale"] = moment.locale([lang, "en"]);
 
     var timepointList = this.getTimepointList();
     var result = timepointList.reduce(addTimeData(this), {data: [], groups: {}, errors: []});
