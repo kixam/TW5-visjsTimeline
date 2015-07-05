@@ -11,6 +11,22 @@
     "tiddlywiki/snowwhite"
   ],
   "languages": [
+    "ca-ES",
+    "cs-CZ",
+    "da-DK",
+    "de-DE",
+    "el-GR",
+    "es-ES",
+    "fr-FR",
+    "hi-IN",
+    "it-IT",
+    "ja-JP",
+    "nl-NL",
+    "pt-PT",
+    "ru-RU",
+    "sk-SK",
+    "zh-Hans",
+    "zh-Hant"
   ],
   "build": {
     "index": [
