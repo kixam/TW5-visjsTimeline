@@ -35,8 +35,8 @@ module-type: widget
     this.parentDomNode = parent;
     this.computeAttributes();
     this.options = {};
-    this.tiddler = $tw.wiki.getTiddler(this.getVariable("currentTiddler"));
-    this.warningTiddlerTitle = "$:/temp/visjstimeline-warning/" + this.tiddler.fields.title
+    this.tiddler = $tw.wiki.getTiddler(this.parentWidget.transcludeTitle);
+    this.warningTiddlerTitle = "$:/temp/visjstimeline-warning/" + this.tiddler.fields.title;
     this.hasCustomTime = false;
 
     var attrParseWorked = this.execute();
