@@ -182,8 +182,8 @@ module-type: widget
     });
     if(this.attributes["persistent"] !== undefined) {
       // apply saved x-axis range
-      var start = moment(this.tiddler.fields["timeline:start"]);
-      var end = moment(this.tiddler.fields["timeline:end"]);
+      var start = moment(this.tiddler.fields["timeline.start"]);
+      var end = moment(this.tiddler.fields["timeline.end"]);
       if(start.isValid() && end.isValid()) {
         this.options.start = start.toDate();
         this.options.end = end.toDate();
@@ -201,8 +201,8 @@ module-type: widget
       var start = moment(properties.start);
       var end = moment(properties.end);
       if(start.isValid() && end.isValid()) {
-        utils.setTiddlerField(this.tiddler.fields.title, "timeline:start", start.format());
-        utils.setTiddlerField(this.tiddler.fields.title, "timeline:end", end.format());
+        utils.setTiddlerField(this.tiddler.fields.title, "timeline.start", start.format());
+        utils.setTiddlerField(this.tiddler.fields.title, "timeline.end", end.format());
       }
     }
     this.writeRange = false;
@@ -512,8 +512,8 @@ module-type: widget
     var config = $tw.wiki.getTiddlerData(this.attributes["config"], {});
     var whitelist = $tw.wiki.getTiddlerData("$:/plugins/kixam/timeline/validOptions", {"whitelist":[]}).whitelist;
     if(this.attributes["persistent"] !== undefined
-    && this.tiddler.fields["timeline:start"] !== undefined
-    && this.tiddler.fields["timeline:end"] !== undefined) {
+    && this.tiddler.fields["timeline.start"] !== undefined
+    && this.tiddler.fields["timeline.end"] !== undefined) {
       whitelist.start = undefined;
       whitelist.end = undefined;
     }
@@ -558,8 +558,8 @@ module-type: widget
       this.appendWarning(result.errors[i]);
     }
     if(this.attributes["persistent"] === undefined
-    || this.tiddler.fields["timeline:start"] === undefined
-    || this.tiddler.fields["timeline:end"] === undefined) {
+    || this.tiddler.fields["timeline.start"] === undefined
+    || this.tiddler.fields["timeline.end"] === undefined) {
       this.timeline.fit();
     }
   };
