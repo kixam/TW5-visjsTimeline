@@ -57,6 +57,9 @@ module-type: widget
         if(this.isContainedInSidebar) {
           this.parentDomNode.style["margin-top"]="-14px";
           this.parentDomNode.style["padding-right"]="2px";
+        } else {
+          this.parentDomNode.style["height"] = "auto";
+          console.log(this.parentDomNode);
         }
         parent.style["width"] = this.getAttribute("width", "100%");
         this.handleResizeEvent = this.handleResizeEvent.bind(this);
@@ -216,6 +219,8 @@ module-type: widget
       var distanceBottom = this.getAttribute("bottom-spacing", "0px");
       var calculatedHeight = (windowHeight - canvasOffset - (this.isContainedInSidebar?3:0)) + "px";
       this.parentDomNode.style["height"] = "calc(" + calculatedHeight + " - " + distanceBottom + ")";
+    } else if(this.attributes["boxing"] === "auto") {
+      this.parentDomNode.style["height"] = "auto";
     } else {
       var height = this.getAttribute("height");
       this.parentDomNode.style["height"] = (height ? height : "300px");
