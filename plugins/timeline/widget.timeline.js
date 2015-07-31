@@ -59,7 +59,6 @@ module-type: widget
           this.parentDomNode.style["padding-right"]="2px";
         } else {
           this.parentDomNode.style["height"] = "auto";
-          console.log(this.parentDomNode);
         }
         parent.style["width"] = this.getAttribute("width", "100%");
         this.handleResizeEvent = this.handleResizeEvent.bind(this);
@@ -499,7 +498,12 @@ module-type: widget
     this.options["locale"] = moment.locale([lang, "en"]);
 
     var timepointList = this.getTimepointList();
-    var result = timepointList.reduce(addTimeData(this), {data: [], groups: {}, errors: []});
+    var groups = {};
+    if(this.groupTags !== undefined) {
+      $tw.utils.each($tw.wiki.filterTiddlers(this.groupTags),
+        function(tag) {groups[tag] = false;});
+    }
+    var result = timepointList.reduce(addTimeData(this), {data: [], groups: groups, errors: []});
     this.displayedTiddlers = result.data;
     this.timeline.setItems(result.data);
     if (this.customTime !== undefined) {
@@ -529,31 +533,34 @@ module-type: widget
     if (Object.keys(result.groups).length !== 0) {
       var theGroups = [];
       for (var group in result.groups) {
-        theGroups.push({id: group, content: group, title: group});
-        if(group === "Global") {
-          theGroups[theGroups.length-1].content = "&mdash; Global &mdash;";
-          theGroups[theGroups.length-1].style = "background-color:rgba(0,0,0,0); font-style:italic;";
-        }
-        else {
-          var tiddler = $tw.wiki.getTiddler(group);
-          if(tiddler !== undefined) {
-            var caption = "<span>" + (tiddler.fields.caption || group) + "</span>",
-                description = tiddler.fields.description || tiddler.fields.caption || group,
-                color = tiddler.fields.color || false,
-                icon = tiddler.fields.icon,
-                iconTiddler = $tw.wiki.getTiddler(icon);
-            if(color) {
-              theGroups[theGroups.length-1].style = "border-width:3px; border-style:solid;"
-                                                  + "border-bottom-width:3px; border-bottom-style:solid;"
-                                                  + utils.enhancedColorStyle(tiddler.fields.color);
+        if(result.groups[group]) {
+          if(group === "Global") {
+            theGroups.splice(0,0,{id: group,
+                             content: "&mdash; Global &mdash;",
+                               title: "(Global)",
+                               style: "background-color:rgba(0,0,0,0); font-style:italic;"});
+          } else {
+            theGroups.push({id: group, content: group, title: group});
+            var tiddler = $tw.wiki.getTiddler(group);
+            if(tiddler !== undefined) {
+              var caption = "<span>" + (tiddler.fields.caption || group) + "</span>",
+                  description = tiddler.fields.description || tiddler.fields.caption || group,
+                  color = tiddler.fields.color || false,
+                  icon = tiddler.fields.icon,
+                  iconTiddler = $tw.wiki.getTiddler(icon);
+              if(color) {
+                theGroups[theGroups.length-1].style = "border-width:3px; border-style:solid;"
+                                                    + "border-bottom-width:3px; border-bottom-style:solid;"
+                                                    + utils.enhancedColorStyle(tiddler.fields.color);
+              }
+              if(iconTiddler !== undefined) {
+                caption = "<span class='group-icon'" + (color?" style='fill:"+color+"';":"") + ">"
+                        + iconTiddler.fields.text + "</span><br>"
+                        + caption;
+              }
+              theGroups[theGroups.length-1].content = caption;
+              theGroups[theGroups.length-1].title = description;
             }
-            if(iconTiddler !== undefined) {
-              caption = "<span class='group-icon'" + (color?" style='fill:"+color+"';":"") + ">"
-                      + iconTiddler.fields.text + "</span><br>"
-                      + caption;
-            }
-            theGroups[theGroups.length-1].content = caption;
-            theGroups[theGroups.length-1].title = description;
           }
         }
       }
