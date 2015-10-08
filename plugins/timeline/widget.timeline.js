@@ -401,6 +401,29 @@ module-type: widget
     }
   }
 
+  function iconPrefix(icon, color, spanclass)
+  {
+    var text = "",
+        iconTiddler = $tw.wiki.getTiddler(icon);
+    if(iconTiddler !== undefined) {
+      text = "</span>&nbsp;";
+      var type = iconTiddler.fields.type || "image/svg+xml";
+      if(type === "image/svg+xml") {
+        text = iconTiddler.fields.text + text;
+      } else {
+        $tw.Wiki.parsers[type](type, iconTiddler.fields.text, iconTiddler.fields);
+        var obj  = $tw.Wiki.parsers.tree[0];
+        text = "></" + obj.tag + ">" + text;
+        for(var k in obj.attributes) {
+          text = " " + k + " = '" + obj.attributes[k].value + "'" + text;
+        }
+        text = "<" + obj.tag + text;
+      }
+      text = "<span class='" + spanclass + "'" + (color?" style='fill:"+color+"';":"") + ">" + text;
+    }
+    return text;
+  }
+
   function addTimeData(self) {
     return function(current, tiddlerName) {
       var currentData = current.data;
@@ -412,19 +435,13 @@ module-type: widget
         var tiddlerStartDate = theTiddler.getFieldString(self.startDateField);
         var startDate = dateFieldToDate(tiddlerStartDate, self.format);
         if (!isNaN(startDate)) {
-          // var newTimepoint = {id: tiddlerName, content: tiddlerName, start: $tw.utils.formatDateString(startDate, "YYYY-0MM-0DD"), type: 'point'};
           var caption = theTiddler.fields.caption || tiddlerName,
               description = theTiddler.fields.description || caption,
               color = theTiddler.fields.color || false,
               style = "border-color: " + color + ";" || "",
-              icon = theTiddler.fields.icon,
-              iconTiddler = $tw.wiki.getTiddler(icon);
-          if(iconTiddler !== undefined) {
-            caption = "<span class='item-icon'" + (color?" style='fill:"+color+"';":"") + ">"
-                    + iconTiddler.fields.text + "</span>&nbsp;"
-                    + caption;
-          }
-          var newTimepoint = {id: tiddlerName, content: caption, title: description, style: style, start: startDate, type: 'point'};
+              icon = theTiddler.fields.icon;
+          caption = iconPrefix(icon, color, "item-icon") + caption;
+        var newTimepoint = {id: tiddlerName, content: caption, title: description, style: style, start: startDate, type: 'point'};
           var tiddlerGroup = "";
           if (self.groupField !== undefined) {
             tiddlerGroup = theTiddler.getFieldString(self.groupField);
@@ -543,20 +560,14 @@ module-type: widget
             theGroups.push({id: group, content: group, title: group});
             var tiddler = $tw.wiki.getTiddler(group);
             if(tiddler !== undefined) {
-              var caption = "<span>" + (tiddler.fields.caption || group) + "</span>",
-                  description = tiddler.fields.description || tiddler.fields.caption || group,
+              var icon = tiddler.fields.icon,
                   color = tiddler.fields.color || false,
-                  icon = tiddler.fields.icon,
-                  iconTiddler = $tw.wiki.getTiddler(icon);
+                  caption = iconPrefix(icon, color, "group-icon") + "<p>" + (tiddler.fields.caption || group) + "</p>",
+                  description = tiddler.fields.description || tiddler.fields.caption || group;
               if(color) {
                 theGroups[theGroups.length-1].style = "border-width:3px; border-style:solid;"
                                                     + "border-bottom-width:3px; border-bottom-style:solid;"
-                                                    + utils.enhancedColorStyle(tiddler.fields.color);
-              }
-              if(iconTiddler !== undefined) {
-                caption = "<span class='group-icon'" + (color?" style='fill:"+color+"';":"") + ">"
-                        + iconTiddler.fields.text + "</span><br>"
-                        + caption;
+                                                    + utils.enhancedColorStyle(color);
               }
               theGroups[theGroups.length-1].content = caption;
               theGroups[theGroups.length-1].title = description;

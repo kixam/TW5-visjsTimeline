@@ -52,12 +52,12 @@ type: text/css
   margin: 1px;
 }
 
-.item-icon svg {
-  height: 14px;
-  width: 14px;
+.item-icon svg, .item-icon img {
+  max-height: 14px;
+  max-width: 14px;
 }
 
-.group-icon svg {
-  height: 16px;
-  width: 16px;
+.group-icon svg, .group-icon img {
+  max-height: 16px;
+  max-width: 16px;
 }
