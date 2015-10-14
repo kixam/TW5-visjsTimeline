@@ -184,9 +184,9 @@ module-type: widget
     });
     if(this.attributes["persistent"] !== undefined) {
       // apply saved x-axis range
-      var start = moment(this.tiddler.fields["timeline.start"]);
-      var end = moment(this.tiddler.fields["timeline.end"]);
-      if(start.isValid() && end.isValid()) {
+      var start = moment(dateFieldToDate(this.tiddler.fields["timeline.start"], this.format));
+      var end = moment(dateFieldToDate(this.tiddler.fields["timeline.end"], this.format));
+      if(start.isValid() && end.isValid() && start.isBefore(end)) {
         this.options.start = start.toDate();
         this.options.end = end.toDate();
       }
@@ -386,10 +386,28 @@ module-type: widget
 
   function dateFieldToDate(dateField, dateFormat) {
     dateField = dateField.trim();
-    if (dateField === "now") {
-      return new Date();
+    var re = /moment\(["' ]*([^)"']*)["' ]*\)\.(add|subtract)\( *([^,]+) *,["' ]*([^)"']+)["' ]*\)/i;
+    if (re.test(dateField)) {
+      var res = re.exec(dateField),
+          def = res[1],
+          operation = res[2],
+          qty = parseInt(res[3]),
+          unit = res[4],
+          m = (def.trim() === "" ? moment() : moment(def));
+      if (operation === "add") {
+        m.add(qty, unit);
+      } else if(operation === "subtract"){
+        m.subtract(qty, unit);
+      }
+      else m = moment.invalid();
+      if (m.isValid()) {
+        return m.toDate();
+      }
     }
-    if (dateField !== "") {
+    else if (dateField === "now") {
+        return new Date();
+    }
+    else if (dateField !== "") {
       if (dateFormat === undefined) {
         return $tw.utils.parseDate(dateField);
       } else {
