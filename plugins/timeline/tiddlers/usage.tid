@@ -41,8 +41,9 @@ Each matching tiddler is shown on the timeline using its specified start date an
 !! Valid date format on tiddlers
 * By default dates are parsed using the [[TiddlyWiki|http://tiddlywiki.com/#TiddlyWiki]] date parser (which will handle the `created` and `modified` fields)
 * An override date format can be specified.
-* This format will apply to both the start and end dates, and `customTime`.
+* This format will apply to both the start and end dates, `customTime`, as well as `timeline.start` and `timeline.end` fields if set manually.
 * Additionally the start date or end date field on a tiddler, or the `customTime` attribute, can be set to the word `now`: this will set the date in the timeline to the date at the time the timeline is displayed.
+* Finally, any date field can use `moment`'s [[relative date calculation functions|http://momentjs.com/docs/#/manipulating/add/]] `add` or `subtract`, overloading the provided format. For instance, if `persistent` option is used, one can manually set `timeline.start` field to `moment().subtract(2,days)`, which will result in the timeline start date to be 2 days before 'now', that is 2 days before the date when the timeline is rendered. The syntax `moment(2015-10-14).add(1,days)` would compute into one day after Wednesday, 14th October, 2015, that is, Thursday, 15th. In this particular case, it is advised to set `vis.js` option `moveable` to `false`, see this plugin's `config` option.
 
 !! Relevant tiddler fields
 |!Field|!Interpretation|
@@ -50,7 +51,7 @@ Each matching tiddler is shown on the timeline using its specified start date an
 | `description` |Used instead of `caption` or `title` to render description text when mouse hovers over the item.|
 | `icon` |Link to a image tiddler that will be used as the item's icon.|
 | `color` |Used to render the corresponding item or group on the timeline.|
-| `timeline.start` and `timeline.end` |If the `persistent` attribute is present, used to load/save the start and end of the contained timeline x-axis, respectively.|
+| `timeline.start` and `timeline.end` |If the `persistent` attribute is present, used to load/save the start and end of the contained timeline x-axis, respectively. Note that, if `vis.js` option `moveable` is set to `true`, which is the default, these fields will be silently overwritten by this plugin whenever the user zooms or moves the timeline|
 
 !! Attributes
 
