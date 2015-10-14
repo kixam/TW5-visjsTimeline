@@ -40,7 +40,8 @@ module-type: widget
       this.tiddler = this.tiddler.parentWidget;
     }
     this.tiddler = $tw.wiki.getTiddler(this.tiddler.tiddlerTitle || this.tiddler.transcludeTitle);
-    this.warningTiddlerTitle = "$:/temp/visjstimeline-warning/" + this.tiddler.fields.title;
+    this.warningTiddlerTitle = "$:/temp/visjstimeline/warning/" + this.tiddler.fields.title;
+    this.persistentTiddlerTitle = "$:/temp/visjstimeline/persistent/" + this.tiddler.fields.title;
     this.hasCustomTime = false;
 
     var attrParseWorked = this.execute();
@@ -182,10 +183,28 @@ module-type: widget
         }
       }
     });
+
     if(this.attributes["persistent"] !== undefined) {
-      // apply saved x-axis range
-      var start = moment(dateFieldToDate(this.tiddler.fields["timeline.start"], this.format));
-      var end = moment(dateFieldToDate(this.tiddler.fields["timeline.end"], this.format));
+      // duplicate initial settings to working tiddler if it does not exist
+      var tiddler = $tw.wiki.getTiddler(this.persistentTiddlerTitle);
+      if(tiddler === undefined) {
+        var rawstart = this.tiddler.fields["timeline.start"],
+            tstart = moment(dateFieldToDate(rawstart, this.format)),
+            rawend = this.tiddler.fields["timeline.end"],
+            tend = moment(dateFieldToDate(rawend, this.format)),
+            fields = {title: this.persistentTiddlerTitle,
+                      text: "Timeline in [[" + this.tiddler.fields.title + "]] starts from {{!!timeline.start}} and ends at {{!!timeline.end}}"};
+        if(tstart.isValid() && tend.isValid() && tstart.isBefore(tend)) {
+          fields["timeline.start"] = rawstart;
+          fields["timeline.end"] = rawend;
+        }
+        $tw.wiki.addTiddler(new $tw.Tiddler(fields));
+      }
+
+      // apply saved x-axis range from the working tiddler
+      tiddler = $tw.wiki.getTiddler(this.persistentTiddlerTitle);
+      var start = moment(dateFieldToDate(tiddler.fields["timeline.start"], this.format)),
+          end = moment(dateFieldToDate(tiddler.fields["timeline.end"], this.format));
       if(start.isValid() && end.isValid() && start.isBefore(end)) {
         this.options.start = start.toDate();
         this.options.end = end.toDate();
@@ -203,8 +222,8 @@ module-type: widget
       var start = moment(properties.start);
       var end = moment(properties.end);
       if(start.isValid() && end.isValid()) {
-        utils.setTiddlerField(this.tiddler.fields.title, "timeline.start", start.format());
-        utils.setTiddlerField(this.tiddler.fields.title, "timeline.end", end.format());
+        utils.setTiddlerField(this.persistentTiddlerTitle, "timeline.start", start.format());
+        utils.setTiddlerField(this.persistentTiddlerTitle, "timeline.end", end.format());
       }
     }
     this.writeRange = false;
@@ -385,6 +404,7 @@ module-type: widget
   }
 
   function dateFieldToDate(dateField, dateFormat) {
+    if(dateField === undefined) return;
     dateField = dateField.trim();
     var re = /moment\(["' ]*([^)"']*)["' ]*\)\.(add|subtract)\( *([^,]+) *,["' ]*([^)"']+)["' ]*\)/i;
     if (re.test(dateField)) {
@@ -555,9 +575,7 @@ module-type: widget
     // override default options with these provided by the user, if any
     var config = $tw.wiki.getTiddlerData(this.attributes["config"], {});
     var whitelist = $tw.wiki.getTiddlerData("$:/plugins/kixam/timeline/validOptions", {"whitelist":[]}).whitelist;
-    if(this.attributes["persistent"] !== undefined
-    && this.tiddler.fields["timeline.start"] !== undefined
-    && this.tiddler.fields["timeline.end"] !== undefined) {
+    if(this.attributes["persistent"] !== undefined) {
       whitelist.start = undefined;
       whitelist.end = undefined;
     }
@@ -598,9 +616,7 @@ module-type: widget
     for(var i=0; i<result.errors.length; i++) {
       this.appendWarning(result.errors[i]);
     }
-    if(this.attributes["persistent"] === undefined
-    || this.tiddler.fields["timeline.start"] === undefined
-    || this.tiddler.fields["timeline.end"] === undefined) {
+    if(this.attributes["persistent"] === undefined) {
       this.timeline.fit();
     }
   };
