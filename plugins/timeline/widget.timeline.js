@@ -34,7 +34,7 @@ module-type: widget
   TimelineWidget.prototype.render = function(parent,nextSibling) {
     this.parentDomNode = parent;
     this.computeAttributes();
-    this.options = {};
+    this.options = {orientation: "bottom"};
     this.tiddler = this.parentWidget;
     while(this.tiddler.parentWidget !== undefined && this.tiddler.tiddlerTitle === undefined && this.tiddler.transcludeTitle === undefined) {
       this.tiddler = this.tiddler.parentWidget;
@@ -167,7 +167,7 @@ module-type: widget
 
   TimelineWidget.prototype.createTimeline = function() {
     var data = [];
-    this.timeline = new vis.Timeline(this.timelineHolder, data);
+    this.timeline = new vis.Timeline(this.timelineHolder, data, this.options);
 
     var self = this;
     this.timeline.on('click', function(properties) {
