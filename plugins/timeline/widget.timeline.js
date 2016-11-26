@@ -479,7 +479,7 @@ module-type: widget
               style = "border-color: " + color + ";" || "",
               icon = theTiddler.fields.icon;
           caption = iconPrefix(icon, color, "item-icon") + caption;
-          description += "\n" + self.startDateField + ": " + startDate;
+          description += "\n" + self.startDateField + ": " + tiddlerStartDate;
           var newTimepoint = {id: tiddlerName, content: caption, title: description, style: style, start: startDate, type: 'point'};
           var tiddlerGroup = "";
           if (self.groupField !== undefined) {
@@ -513,7 +513,7 @@ module-type: widget
               endDate = startDate;
             }
             else {
-              newTimepoint.title += "\n" + self.endDateField + ": " + endDate
+              newTimepoint.title += "\n" + self.endDateField + ": " + tiddlerEndDate;
             }
 
             newTimepoint.end = endDate;
