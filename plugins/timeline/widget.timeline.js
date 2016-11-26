@@ -479,7 +479,8 @@ module-type: widget
               style = "border-color: " + color + ";" || "",
               icon = theTiddler.fields.icon;
           caption = iconPrefix(icon, color, "item-icon") + caption;
-        var newTimepoint = {id: tiddlerName, content: caption, title: description, style: style, start: startDate, type: 'point'};
+          description += "\n" + self.startDateField + ": " + startDate;
+          var newTimepoint = {id: tiddlerName, content: caption, title: description, style: style, start: startDate, type: 'point'};
           var tiddlerGroup = "";
           if (self.groupField !== undefined) {
             tiddlerGroup = theTiddler.getFieldString(self.groupField);
@@ -510,6 +511,9 @@ module-type: widget
                 currentErrors.push("| [[" + tiddlerName + "]] |Could not parse end date \"" + tiddlerEndDate + "\" from field `" + self.endDateField + "`|Used start date as end date|");
               }
               endDate = startDate;
+            }
+            else {
+              newTimepoint.title += "\n" + self.endDateField + ": " + endDate
             }
 
             newTimepoint.end = endDate;
