@@ -47,7 +47,7 @@ Each matching tiddler is shown on the timeline using its specified start date an
 
 !! Relevant tiddler fields
 |!Field|!Interpretation|
-| `caption` |Used to represent the tiddler instead of the `title`.|
+| `caption` |Used to represent the tiddler instead of the `title` (unless overridden by `captionField`).|
 | `description` |Used instead of `caption` or `title` to render description text when mouse hovers over the item.|
 | `icon` |Link to a image tiddler that will be used as the item's icon.|
 | `color` |Used to render the corresponding item or group on the timeline.|
@@ -59,6 +59,7 @@ All attributes are optional.
 
 |!Attribute|!Description|!Default value|! |
 | `filter` |The [[TiddlerFilter|http://tiddlywiki.com/#Filters]] used to generate the list of tiddlers to display.|`!is[system]`|<<tryit filter "[all[tiddlers]tag[Group A]]">>|
+| `captionField` |The field on each tiddler that gets displayed in the timeline.|`caption`||
 | `startDateField` |A field on each tiddler that defines the start date of a tiddler in the timeline.|`created`|<<tryit startDateField modified>>|
 | `endDateField` |A field on each tiddler that defines the end date of a tiddler in the timeline.|//undefined//|<<tryit endDateField created>>|
 | `format` |The format for parsing the dates, using the moment.js [[Parse string+format|http://momentjs.com/docs/#/parsing/string-format/]]. If unset, uses [[TW5 date format|http://tiddlywiki.com/#DateFormat]].|//undefined//||
