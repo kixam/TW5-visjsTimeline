@@ -95,6 +95,7 @@ module-type: widget
   TimelineWidget.prototype.execute = function() {
     var attrParseWorked = utils.parseWidgetAttributes(this,{
            filter: { type: "string", defaultValue: "[!is[system]]"},
+           captionField: { type: "string", defaultValue: "caption"},
            groupField: { type: "string", defaultValue: undefined},
            startDateField: { type: "string", defaultValue: "created"},
            endDateField:  { type: "string", defaultValue: undefined},
@@ -141,6 +142,7 @@ module-type: widget
   TimelineWidget.prototype.refresh = function(changedTiddlers) {
     var changedAttributes = this.computeAttributes();
     if(changedAttributes.filter
+	|| changedAttributes.captionField
     || changedAttributes.startDateField
     || changedAttributes.endDateField
     || changedAttributes.groupField
@@ -473,7 +475,7 @@ module-type: widget
         var tiddlerStartDate = theTiddler.getFieldString(self.startDateField);
         var startDate = dateFieldToDate(tiddlerStartDate, self.format);
         if (!isNaN(startDate)) {
-          var caption = theTiddler.fields.caption || tiddlerName,
+          var caption = theTiddler.getFieldString(self.captionField) || tiddlerName,
               description = theTiddler.fields.description || caption,
               color = theTiddler.fields.color || false,
               style = "border-color: " + color + ";" || "",
