@@ -5,4 +5,4 @@ caption: Demo caption
 description: Demo description
 icon: $:/plugins/kixam/timeline/icon
 
-<$visjstimeline endDateField="modified" groupTags="[[Group A]]" navpad>
+<$visjstimeline endDateField="modified" groupTags="[[Group A]]" navpad tipFormat="YYYY-MM-DD HH:mm:ss">

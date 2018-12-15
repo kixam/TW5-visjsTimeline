@@ -99,6 +99,7 @@ module-type: widget
            startDateField: { type: "string", defaultValue: "created"},
            endDateField:  { type: "string", defaultValue: undefined},
            format:  { type: "string", defaultValue: undefined},
+           tipFormat:  { type: "string", defaultValue: undefined},
            customTime:  { type: "string", defaultValue: undefined},
            groupTags: {type: "string", defaultValue: undefined},
            boxing: {type: "string", defaultValue: "static"},
@@ -143,6 +144,7 @@ module-type: widget
     if(changedAttributes.filter
     || changedAttributes.startDateField
     || changedAttributes.endDateField
+    || changedAttributes.tipFormat
     || changedAttributes.groupField
     || changedAttributes.customTime
     || changedAttributes.groupTags
@@ -479,7 +481,9 @@ module-type: widget
               style = "border-color: " + color + ";" || "",
               icon = theTiddler.fields.icon;
           caption = iconPrefix(icon, color, "item-icon") + caption;
-          description += "\n" + self.startDateField + ": " + tiddlerStartDate;
+          if(self.tipFormat !== undefined) {
+            description += "<br><br>" + self.startDateField + ": " + moment(startDate).format(self.tipFormat);
+          }
           var newTimepoint = {id: tiddlerName, content: caption, title: description, style: style, start: startDate, type: 'point'};
           var tiddlerGroup = "";
           if (self.groupField !== undefined) {
@@ -512,8 +516,8 @@ module-type: widget
               }
               endDate = startDate;
             }
-            else {
-              newTimepoint.title += "\n" + self.endDateField + ": " + tiddlerEndDate;
+            else if(self.tipFormat !== undefined) {
+              newTimepoint.title += "<br>" + self.endDateField + ": " + moment(endDate).format(self.tipFormat);
             }
 
             newTimepoint.end = endDate;

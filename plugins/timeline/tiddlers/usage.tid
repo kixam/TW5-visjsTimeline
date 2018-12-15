@@ -62,6 +62,7 @@ All attributes are optional.
 | `startDateField` |A field on each tiddler that defines the start date of a tiddler in the timeline.|`created`|<<tryit startDateField modified>>|
 | `endDateField` |A field on each tiddler that defines the end date of a tiddler in the timeline.|//undefined//|<<tryit endDateField created>>|
 | `format` |The format for parsing the dates, using the moment.js [[Parse string+format|http://momentjs.com/docs/#/parsing/string-format/]]. If unset, uses [[TW5 date format|http://tiddlywiki.com/#DateFormat]].|//undefined//||
+| `tipFormat` |If present, the date format used to display the starting and ending dates in the tooltip boxes when mouse gets over an item. If unset, the dates are not displayed|//undefined//|<<tryit tipFormat "YYYY-MM-DD HH:mm:ss">>|
 | `groupField` |A field whose value will be used to group tiddlers on the timeline.|//undefined//|<<tryit groupField color>>|
 | `customTime` |A date at which a vertical bar will be shown on the timeline. Affected by `format`. It can be moved by the user, but the new position will not be saved.|//undefined//|<<tryit customTime "20150619">>|
 | `groupTags` |If `groupField` field is not used and if a filtered tiddler has a tag among the given [[Title List|http://tiddlywiki.com/#Title%20List]], this tag will be used as the item's group.|//undefined//|<<tryit groupTags "[[Group A]]">>|
