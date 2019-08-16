@@ -4,7 +4,7 @@ modified: 20150511070703594
 tags: [[Group A]]
 title: Installation
 
-Just drag and drop [[vis.js|$:/plugins/felixhayashi/vis]], [[moment.js|$:/plugins/kixam/moment]], and [[vis.js Timeline|$:/plugins/kixam/timeline]] plugins from the [[Plugins|$:/core/ui/ControlPanel/Plugins]] list into your [[TiddlyWiki|http://tiddlywiki.com/#TiddlyWiki]].
+Just drag and drop [[hammer.js|$:/plugins/kixam/hammerjs]], [[moment.js|$:/plugins/kixam/moment]], and [[vis.js Timeline|$:/plugins/kixam/timeline]] plugins from the [[Plugins|$:/core/ui/ControlPanel/Plugins]] list into your [[TiddlyWiki|http://tiddlywiki.com/#TiddlyWiki]].
 
 The plugin was tested with all the locales listed in the Languages section below.
 

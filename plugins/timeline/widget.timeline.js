@@ -22,7 +22,7 @@ module-type: widget
     window.moment = moment;
   }
   var utils = require("$:/plugins/kixam/timeline/widget.utils.js");
-  var vis = require("$:/plugins/felixhayashi/vis/vis.js");
+  var vis = require("$:/plugins/kixam/timeline/vis-timeline.js");
 
   var TimelineWidget = function(parseTreeNode,options) {
     Widget.call(this);

@@ -2,8 +2,8 @@
   "description": "Documentation from https://github.com/kixam/TW5-visjsTimeline",
   "plugins": [
     "tiddlywiki/highlight",
-    "felixhayashi/vis",
     "kixam/moment",
+    "kixam/hammerjs",
     "kixam/timeline"
   ],
   "themes": [
