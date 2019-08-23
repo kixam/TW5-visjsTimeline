@@ -7,6 +7,6 @@ node ../../../tiddlywiki.js . --build index
 
 if [[ $? -eq 0 ]]
 then
-  mv output/* .
-  rmdir output
+  mv output/index.html .
+  rm -rf output
 fi

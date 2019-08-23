@@ -288,19 +288,18 @@ module-type: widget
   }
 
   TimelineWidget.prototype.createNavpad = function() {
-    var navpad = $tw.utils.domMaker("div",{class: "vis-navigation visjstimeline-navpad"});
+    var navpad = $tw.utils.domMaker("div",{class: "visjstimeline-navpad"});
 
-    this.timelineHolder.className = "vis-network";
     this.timelineHolder.appendChild(navpad);
     this.domNodes.push(navpad);
 
-    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "vis-button vis-up", id: "up", style: "visibility: hidden"}}));
-    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "vis-button vis-down", id: "down", style: "visibility: hidden"}}));
-    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "vis-button vis-left", id: "left"}}));
-    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "vis-button vis-right", id: "right"}}));
-    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "vis-button vis-zoomIn", id: "zoomIn"}}));
-    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "vis-button vis-zoomOut", id: "zoomOut"}}));
-    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "vis-button vis-zoomExtends", id: "zoomExtends"}}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{id: "up", title: "Browse up", style: "visibility: hidden"}, innerHTML: "▲"}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{id: "down", title: "Browse down", style: "visibility: hidden"}, innerHTML: "▼"}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{id: "left", title: "Browse to earlier"}, innerHTML: "◀"}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{id: "right", title: "Browse to later"}, innerHTML: "▶"}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{id: "zoomIn", title: "Zoom in"}, innerHTML: "⌼"}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{id: "zoomOut", title: "Zoom out"}, innerHTML: "⌻"}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{id: "zoomExtends", title: "Zoom to fit entries"}, innerHTML: "⛶"}));
 
     this.handleNavpadClick = this.handleNavpadClick.bind(this);
     for(var i=0; i<navpad.childNodes.length; i++) {

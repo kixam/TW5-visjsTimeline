@@ -13,7 +13,7 @@ module-type: library
  * Create a fully customizable, interactive timeline with items and ranges.
  *
  * @version 5.1.0
- * @date    2019-08-16T19:28:33Z
+ * @date    2019-08-23T15:38:38Z
  *
  * @copyright (c) 2011-2017 Almende B.V, http://almende.com
  * @copyright (c) 2018-2019 visjs contributors, https://github.com/visjs
