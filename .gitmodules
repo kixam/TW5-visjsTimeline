@@ -1,3 +1,3 @@
 [submodule "vis-timeline"]
 	path = vis-timeline
-	url = /vis-timeline
+	url = https://github.com/visjs/vis-timeline.git
