@@ -69,8 +69,8 @@ All attributes are optional.
 | `groupTags` |If `groupField` field is not used and if a filtered tiddler has a tag among the given [[Title List|http://tiddlywiki.com/#Title%20List]], this tag will be used as the item's group.|//undefined//|<<tryit groupTags "[[Group A]]">>|
 | `boxing` |If set to `static`, the containing box will be static. If set to `auto`, the timeline will dynamically adjust its height to the items to show.|`static`|<<tryit boxing auto>>|
 | `navpad` |If set, a navpad will be shown.|//undefined//|<<tryit navpad>>|
-| `config` |Title of a tiddler which contains configuration options for the timeline in [[JSON format|http://tiddlywiki.com/#JSONTiddlers]], as per [[vis.js documentation|http://visjs.org/docs/timeline/#Configuration_Options]].|//undefined//||
-| `persistent` |If set, the x-axis range will become persistent. Uses (creates, if needed) 2 fields of the tiddler containing the timeline, namely `timeline:start` and `timeline:end`.|//undefined//|<<tryit persistent>>|
+| `config` |Title of a tiddler which contains configuration options for the timeline in [[JSON format|http://tiddlywiki.com/#JSONTiddlers]], as per [[vis.js documentation|https://visjs.github.io/vis-timeline/docs/timeline/#Configuration_Options]].|//undefined//||
+| `persistent` |If set, the x-axis range will become persistent. Uses (creates, if needed) 2 fields of the tiddler containing the timeline, namely `timeline.start` and `timeline.end`.|//undefined//|<<tryit persistent>>|
 
 !!!Notes about the `config` attribute
 * for the sake of integration, not all the options are available, please see [[the whitelist|$:/plugins/kixam/timeline/validOptions]];
