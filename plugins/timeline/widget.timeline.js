@@ -173,12 +173,12 @@ module-type: widget
 
   TimelineWidget.prototype.createTimeline = function() {
     var data = [];
-    var persistentConfigTiddler = $tw.wiki.getTiddler(this.persistentTiddlerTitle);
     // create the timeline
     this.timeline = new vis.Timeline(this.timelineHolder, data, this.options);
     this.timeline.fit();
 
     if(this.attributes["persistent"] !== undefined) {
+      var persistentConfigTiddler = $tw.wiki.getTiddler(this.persistentTiddlerTitle);
       if(persistentConfigTiddler === undefined) {
         // duplicate initial settings to working tiddler if it does not exist
         var start = moment(this.timeline.getWindow().start),
@@ -186,14 +186,14 @@ module-type: widget
             fields = {title: this.persistentTiddlerTitle,
                       text: "Timeline in [[" + this.tiddler.fields.title + "]] starts from {{!!timeline.start}} and ends at {{!!timeline.end}}"};
         if(start.isValid() && end.isValid() && start.isBefore(end)) {
-          fields["timeline.start"] = this.format ? start.format(this.format) : start.format(this.twformat);
-          fields["timeline.end"] = this.format ? end.format(this.format) : end.format(this.twformat);
+          fields["timeline.start"] = start.format(this.format || this.twformat);
+          fields["timeline.end"] = end.format(this.format || this.twformat);
         }
         persistentConfigTiddler = $tw.wiki.addTiddler(new $tw.Tiddler(fields));
       } else {
         // apply saved x-axis range from the working tiddler
-        var start = moment(dateFieldToDate(persistentConfigTiddler.fields["timeline.start"], this.format)),
-            end = moment(dateFieldToDate(persistentConfigTiddler.fields["timeline.end"], this.format));
+        var start = moment(dateFieldToDate(persistentConfigTiddler.fields["timeline.start"], this.format || this.twformat)),
+            end = moment(dateFieldToDate(persistentConfigTiddler.fields["timeline.end"], this.format || this.twformat));
         if(start.isValid() && end.isValid() && start.isBefore(end)) {
           this.timeline.setWindow(start,end);
         }
@@ -626,12 +626,21 @@ module-type: widget
     }
 
     this.timeline.fit();
-    var persistentConfigTiddler = $tw.wiki.getTiddler(this.persistentTiddlerTitle);
-    if(this.attributes["persistent"] !== undefined && persistentConfigTiddler !== undefined) {
-      // apply saved x-axis range from the working tiddler
-      var start = moment(dateFieldToDate(persistentConfigTiddler.fields["timeline.start"], this.format)),
-          end = moment(dateFieldToDate(persistentConfigTiddler.fields["timeline.end"], this.format));
+    if(this.attributes["persistent"] !== undefined) {
+      var persistentConfigTiddler = $tw.wiki.getTiddler(this.persistentTiddlerTitle);
+      if(persistentConfigTiddler === undefined) {
+        // create working tiddler if it does not exist
+        var fields = {title: this.persistentTiddlerTitle,
+                      text: "Timeline in [[" + this.tiddler.fields.title + "]] starts from {{!!timeline.start}} and ends at {{!!timeline.end}}"};
+        persistentConfigTiddler = $tw.wiki.addTiddler(new $tw.Tiddler(fields));
+      }
+      var start = moment(dateFieldToDate(config.start || persistentConfigTiddler.fields["timeline.start"], this.format) || this.timeline.getWindow().start),
+          end = moment(dateFieldToDate(config.end || persistentConfigTiddler.fields["timeline.end"], this.format) || this.timeline.getWindow().end);
       if(start.isValid() && end.isValid() && start.isBefore(end)) {
+        // copy config settings to working tiddler
+        utils.setTiddlerField(this.persistentTiddlerTitle, "timeline.start", start.format(this.format || this.twformat));
+        utils.setTiddlerField(this.persistentTiddlerTitle, "timeline.end", end.format(this.format || this.twformat));
+        // apply saved x-axis range from the working tiddler
         this.timeline.setWindow(start, end);
       }
     }
