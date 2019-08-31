@@ -2,7 +2,7 @@
   "title": "$:/plugins/kixam/timeline",
   "description": "vis.js Timeline plugin for TiddlyWiki5, based on vis-timeline version 5.1.0",
   "author": "kixam",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "core-version": ">=5.1.8",
   "source": "https://github.com/kixam/TW5-visjsTimeline",
   "list": "readme usage license",

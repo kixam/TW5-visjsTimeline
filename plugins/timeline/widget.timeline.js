@@ -43,9 +43,10 @@ module-type: widget
       this.tiddler = this.tiddler.parentWidget;
     }
     this.tiddler = $tw.wiki.getTiddler(this.tiddler.tiddlerTitle || this.tiddler.transcludeTitle);
-    this.warningTiddlerTitle = "$:/temp/visjstimeline/warning/" + this.tiddler.fields.title;
-    this.persistentTiddlerTitle = "$:/temp/visjstimeline/persistent/" + this.tiddler.fields.title;
+    this.warningTiddlerTitle = "$:/temp/plugins/kixam/visjstimeline/warning/" + this.tiddler.fields.title;
+    this.persistentTiddlerTitle = "$:/temp/plugins/kixam/visjstimeline/persistent/" + this.tiddler.fields.title;
     this.hasCustomTime = false;
+    this.twformat = "YYYYMMDDHHmmssSSS"
 
     var attrParseWorked = this.execute();
     if (attrParseWorked === undefined) {
@@ -172,7 +173,36 @@ module-type: widget
 
   TimelineWidget.prototype.createTimeline = function() {
     var data = [];
+    var persistentConfigTiddler = $tw.wiki.getTiddler(this.persistentTiddlerTitle);
+    // create the timeline
     this.timeline = new vis.Timeline(this.timelineHolder, data, this.options);
+    this.timeline.fit();
+
+    if(this.attributes["persistent"] !== undefined) {
+      if(persistentConfigTiddler === undefined) {
+        // duplicate initial settings to working tiddler if it does not exist
+        var start = moment(this.timeline.getWindow().start),
+            end = moment(this.timeline.getWindow().end),
+            fields = {title: this.persistentTiddlerTitle,
+                      text: "Timeline in [[" + this.tiddler.fields.title + "]] starts from {{!!timeline.start}} and ends at {{!!timeline.end}}"};
+        if(start.isValid() && end.isValid() && start.isBefore(end)) {
+          fields["timeline.start"] = this.format ? start.format(this.format) : start.format(this.twformat);
+          fields["timeline.end"] = this.format ? end.format(this.format) : end.format(this.twformat);
+        }
+        persistentConfigTiddler = $tw.wiki.addTiddler(new $tw.Tiddler(fields));
+      } else {
+        // apply saved x-axis range from the working tiddler
+        var start = moment(dateFieldToDate(persistentConfigTiddler.fields["timeline.start"], this.format)),
+            end = moment(dateFieldToDate(persistentConfigTiddler.fields["timeline.end"], this.format));
+        if(start.isValid() && end.isValid() && start.isBefore(end)) {
+          this.timeline.setWindow(start,end);
+        }
+      }
+      // monitor and save changes in x-axis range
+      this.writeRange = false;
+      this.handleRangeChanged = this.handleRangeChanged.bind(this);
+      this.timeline.on('rangechanged', this.handleRangeChanged);
+    }
 
     var self = this;
     this.timeline.on('click', function(properties) {
@@ -188,38 +218,6 @@ module-type: widget
         }
       }
     });
-
-    if(this.attributes["persistent"] !== undefined) {
-      // duplicate initial settings to working tiddler if it does not exist
-      var tiddler = $tw.wiki.getTiddler(this.persistentTiddlerTitle);
-      if(tiddler === undefined) {
-        var rawstart = this.tiddler.fields["timeline.start"],
-            tstart = moment(dateFieldToDate(rawstart, this.format)),
-            rawend = this.tiddler.fields["timeline.end"],
-            tend = moment(dateFieldToDate(rawend, this.format)),
-            fields = {title: this.persistentTiddlerTitle,
-                      text: "Timeline in [[" + this.tiddler.fields.title + "]] starts from {{!!timeline.start}} and ends at {{!!timeline.end}}"};
-        if(tstart.isValid() && tend.isValid() && tstart.isBefore(tend)) {
-          fields["timeline.start"] = rawstart;
-          fields["timeline.end"] = rawend;
-        }
-        $tw.wiki.addTiddler(new $tw.Tiddler(fields));
-      }
-
-      // apply saved x-axis range from the working tiddler
-      tiddler = $tw.wiki.getTiddler(this.persistentTiddlerTitle);
-      var start = moment(dateFieldToDate(tiddler.fields["timeline.start"], this.format)),
-          end = moment(dateFieldToDate(tiddler.fields["timeline.end"], this.format));
-      if(start.isValid() && end.isValid() && start.isBefore(end)) {
-        this.options.start = start.toDate();
-        this.options.end = end.toDate();
-      }
-
-      // monitor and save changes in x-axis range
-      this.writeRange = false;
-      this.handleRangeChanged = this.handleRangeChanged.bind(this);
-      this.timeline.on('rangechanged', this.handleRangeChanged);
-    }
   };
 
   TimelineWidget.prototype.handleRangeChanged = function(properties) {
@@ -227,12 +225,12 @@ module-type: widget
       var start = moment(properties.start);
       var end = moment(properties.end);
       if(start.isValid() && end.isValid()) {
-        utils.setTiddlerField(this.persistentTiddlerTitle, "timeline.start", start.format());
-        utils.setTiddlerField(this.persistentTiddlerTitle, "timeline.end", end.format());
+        utils.setTiddlerField(this.persistentTiddlerTitle, "timeline.start", this.format ? start.format(this.format) : start.format(this.twformat));
+        utils.setTiddlerField(this.persistentTiddlerTitle, "timeline.end", this.format ? end.format(this.format) : end.format(this.twformat));
       }
     }
     this.writeRange = false;
-  }
+  };
 
   // -- adapted from felixhayashi's tiddlymap in widget.map.js
   TimelineWidget.prototype.handleResizeEvent = function(event) {
@@ -626,8 +624,16 @@ module-type: widget
     for(var i=0; i<result.errors.length; i++) {
       this.appendWarning(result.errors[i]);
     }
-    if(this.attributes["persistent"] === undefined) {
-      this.timeline.fit();
+
+    this.timeline.fit();
+    var persistentConfigTiddler = $tw.wiki.getTiddler(this.persistentTiddlerTitle);
+    if(this.attributes["persistent"] !== undefined && persistentConfigTiddler !== undefined) {
+      // apply saved x-axis range from the working tiddler
+      var start = moment(dateFieldToDate(persistentConfigTiddler.fields["timeline.start"], this.format)),
+          end = moment(dateFieldToDate(persistentConfigTiddler.fields["timeline.end"], this.format));
+      if(start.isValid() && end.isValid() && start.isBefore(end)) {
+        this.timeline.setWindow(start, end);
+      }
     }
   };
 
