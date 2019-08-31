@@ -14,7 +14,7 @@ Value for option ''$option$'' : <$edit-text tag=input tiddler='$(optionValueTidd
 \end
 
 \define tryit(option,value:"")
-<$set name=optionValueTiddler value="$:/temp/visjstimeline-demo-option-$option$">
+<$set name=optionValueTiddler value="$:/temp/plugins/kixam/visjstimeline-demo-option-$option$">
 <$set name=optionDemoTiddler value="Testing option '$option$'">
 <$button>
 <$macrocall $name=createSaveCloseTiddler title=<<optionValueTiddler>> text="$value$" />
@@ -51,7 +51,7 @@ Each matching tiddler is shown on the timeline using its specified start date an
 | `description` |Used instead of `caption` or `title` to render description text when mouse hovers over the item.|
 | `icon` |Link to a image tiddler that will be used as the item's icon.|
 | `color` |Used to render the corresponding item or group on the timeline.|
-| `timeline.start` and `timeline.end` |If the `persistent` attribute is present, used to initialize the start and end of the contained timeline x-axis, respectively. When in use, `persistent` option will use a temporary tiddler at `$:/temp/kixam/visjstimeline/persistent/<titleOfTiddlerContainingTimeline>`. Note that, if `vis.js` option `moveable` is set to `true`, which is the default, these fields at the temporary tiddler will be silently overwritten by this plugin whenever the user zooms or moves the timeline. You can also change them manually.|
+| `timeline.start` and `timeline.end` |If the `persistent` attribute is present, used to initialize the start and end of the contained timeline x-axis, respectively. When in use, `persistent` option will use a temporary tiddler at `$:/temp/plugins/kixam/visjstimeline/persistent/<titleOfTiddlerContainingTimeline>`. Note that, if `vis.js` option `moveable` is set to `true`, which is the default, these fields at the temporary tiddler will be silently overwritten by this plugin whenever the user zooms or moves the timeline. You can also change them manually.|
 
 !! Attributes
 
