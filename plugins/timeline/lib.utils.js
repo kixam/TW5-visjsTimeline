@@ -1,5 +1,5 @@
 /*\
-title: $:/plugins/kixam/timeline/widget.utils.js
+title: $:/plugins/kixam/timeline/lib.utils.js
 type: application/javascript
 module-type: library
 
