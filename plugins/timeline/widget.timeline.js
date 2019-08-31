@@ -21,8 +21,11 @@ module-type: widget
   if(typeof window !== 'undefined' && typeof window.moment !== 'function') {
     window.moment = moment;
   }
-  var utils = require("$:/plugins/kixam/timeline/widget.utils.js");
+  var utils = require("$:/plugins/kixam/timeline/lib.utils.js");
   var vis = require("$:/plugins/kixam/timeline/vis-timeline.js");
+  if(typeof window !== 'undefined' && typeof window.vis !== 'function') {
+    window.vis = vis;
+  }
 
   var TimelineWidget = function(parseTreeNode,options) {
     Widget.call(this);

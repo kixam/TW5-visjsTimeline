@@ -57,7 +57,7 @@ if [ $COMPILE == 1 ]; then
   printf "Compile module with dependencies to separate TW5 modules...\n"
   #====================================================================
   
-  cd $moduleName && npm run build -- -e moment,hammerjs
+  res=$(cd $moduleName && npm run build -- -e moment,hammerjs)
 fi
 
 #====================================================================
@@ -88,15 +88,21 @@ type: application/javascript
 module-type: library
 
 @preserve
-\*/'
+\*/
+var vis;if($tw.browser){
+'
+
+footer=\
+'}exports.vis = vis;
+'
 
 body=$(cat $srcPath/$fileName.min.js)
 
-printf "%s\n\n%s\n" "$header" "$body" > $targetDir/$moduleName.js
+printf "%s\n\n%s\n" "$header" "$body" "$footer" > $targetDir/$moduleName.js
 
 # replace vanilla references to dependencies with references to TW5 plugins
-sed -r -i -e 's|require\("moment"\),require\("hammerjs"\)|require("$:/plugins/kixam/moment/moment.js"),require("$:/plugins/kixam/hammerjs/hammer.js")|' "$targetDir/$moduleName.js"
-sed -r -i -e 's|define\(\["moment","hammerjs"\]|define(["$:/plugins/kixam/moment/moment.js","$:/plugins/kixam/hammerjs/hammer.js"]|' "$targetDir/$moduleName.js"
+sed -r -i -e 's|require\("moment"\),require\("hammerjs"\)|require("$:/plugins/kixam/moment/moment.js"),require("$:/plugins/tiddlywiki/hammerjs/hammer.js")|' "$targetDir/$moduleName.js"
+sed -r -i -e 's|define\(\["moment","hammerjs"\]|define(["$:/plugins/kixam/moment/moment.js","$:/plugins/tiddlywiki/hammerjs/hammer.js"]|' "$targetDir/$moduleName.js"
 
 #====================================================================
 printf "Update version information...\n"
