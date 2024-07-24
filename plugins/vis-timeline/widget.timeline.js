@@ -22,9 +22,9 @@ module-type: widget
     window.moment = moment;
   }
   var utils = require("$:/plugins/kixam/timeline/lib.utils.js");
-  var vis = require("$:/plugins/kixam/timeline/vis-timeline.js");
-  if(typeof window !== 'undefined' && typeof window.vis !== 'function') {
-    window.vis = vis;
+  var visTimeline = require("$:/plugins/kixam/vis-timeline/vis-timeline.js").Timeline;
+  if(typeof window !== 'undefined' && typeof window.visTimeline !== 'function') {
+    window.visTimeline = visTimeline;
   }
 
   var TimelineWidget = function(parseTreeNode,options) {
@@ -37,7 +37,18 @@ module-type: widget
   TimelineWidget.prototype.render = function(parent,nextSibling) {
     this.parentDomNode = parent;
     this.computeAttributes();
-    this.options = {orientation: "bottom"};
+    this.options = {
+      orientation: "bottom",
+      selectable: true,
+      editable: {
+        add: false, // deny adding tiddlers from the timeline
+        updateTime: true, // allow changing tiddlers start and end dates
+        updateGroup: false, // deny changing group : can make no sense at all in some configurations
+        remove: false, // deny removing items : what would that even mean ?
+        overrideItems: false // deny items from overriding general settings
+      },
+      onMove: this.handleMoveItem(),
+    };
     this.tiddler = this.parentWidget;
     while(this.tiddler.parentWidget !== undefined && this.tiddler.tiddlerTitle === undefined && this.tiddler.transcludeTitle === undefined) {
       this.tiddler = this.tiddler.parentWidget;
@@ -98,14 +109,13 @@ module-type: widget
 
   TimelineWidget.prototype.execute = function() {
     var attrParseWorked = utils.parseWidgetAttributes(this,{
-           filter: { type: "string", defaultValue: "[!is[system]]"},
-           captionField: { type: "string", defaultValue: "caption"},
-           groupField: { type: "string", defaultValue: undefined},
-           startDateField: { type: "string", defaultValue: "created"},
-           endDateField:  { type: "string", defaultValue: undefined},
-           format:  { type: "string", defaultValue: undefined},
-           tipFormat:  { type: "string", defaultValue: undefined},
-           customTime:  { type: "string", defaultValue: undefined},
+           filter: {type: "string", defaultValue: "[!is[system]]"},
+           groupField: {type: "string", defaultValue: undefined},
+           startDateField: {type: "string", defaultValue: "created"},
+           endDateField: {type: "string", defaultValue: undefined},
+           format: {type: "string", defaultValue: undefined},
+           tipFormat: {type: "string", defaultValue: undefined},
+           customTime: {type: "string", defaultValue: undefined},
            groupTags: {type: "string", defaultValue: undefined},
            boxing: {type: "string", defaultValue: "static"},
            navpad: {type: "string", defaultValue: undefined},
@@ -128,8 +138,7 @@ module-type: widget
     if (changedTiddlers !== undefined) {
       tiddlerList = tiddlerList.filter(function (e) { return changedTiddlers[e];});
     }
-    var self = this;
-    var withoutDraftsList = tiddlerList.filter(function(optionTitle) {
+    var self = this, withoutDraftsList = tiddlerList.filter(function(optionTitle) {
       var optionTiddler = self.wiki.getTiddler(optionTitle);
       if (optionTiddler === undefined) {
         // tiddler may not exist if list attribute provided to widget, so exclude
@@ -141,9 +150,8 @@ module-type: widget
     });
     return withoutDraftsList;
   };
-  /*
-     Selectively refreshes the widget if needed. Returns true if the widget or any of its children needed re-rendering
-     */
+
+  // Selectively refreshes the widget if needed. Returns true if the widget or any of its children needed re-rendering
   TimelineWidget.prototype.refresh = function(changedTiddlers) {
     var changedAttributes = this.computeAttributes();
     if(changedAttributes.filter
@@ -176,7 +184,7 @@ module-type: widget
   TimelineWidget.prototype.createTimeline = function() {
     var data = [];
     // create the timeline
-    this.timeline = new vis.Timeline(this.timelineHolder, data, this.options);
+    this.timeline = new visTimeline(this.timelineHolder, data, this.options);
     this.timeline.fit();
 
     if(this.attributes["persistent"] !== undefined) {
@@ -194,8 +202,8 @@ module-type: widget
         persistentConfigTiddler = $tw.wiki.addTiddler(new $tw.Tiddler(fields));
       } else {
         // apply saved x-axis range from the working tiddler
-        var start = moment(dateFieldToDate(persistentConfigTiddler.fields["timeline.start"], this.format)),
-            end = moment(dateFieldToDate(persistentConfigTiddler.fields["timeline.end"], this.format));
+        var start = moment(this.dateFieldToDate(persistentConfigTiddler.fields["timeline.start"], this.format || this.twformat)),
+            end = moment(this.dateFieldToDate(persistentConfigTiddler.fields["timeline.end"], this.format || this.twformat));
         if(start.isValid() && end.isValid() && start.isBefore(end)) {
           this.timeline.setWindow(start,end);
         }
@@ -206,32 +214,65 @@ module-type: widget
       this.timeline.on('rangechanged', this.handleRangeChanged);
     }
 
-    var self = this;
-    this.timeline.on('click', function(properties) {
-      // Check if background or a tiddler is selected
-      if (properties.item !== null) {
-        var toTiddlerTitle = properties.item;
-        utils.displayTiddler(self, toTiddlerTitle);
-      }
-      else if(properties.group !== null && properties.what === "group-label") {
-        var toTiddlerTitle = properties.group;
-        if($tw.wiki.getTiddler(toTiddlerTitle)) {
-          utils.displayTiddler(self, toTiddlerTitle);
-        }
-      }
-    });
+    this.handleDoubleClickItem = this.handleDoubleClickItem.bind(this);
+    this.timeline.on('doubleClick', this.handleDoubleClickItem);
   };
 
+  // handle changing time range
   TimelineWidget.prototype.handleRangeChanged = function(properties) {
     if(properties.byUser || this.writeRange) {
-      var start = moment(properties.start);
-      var end = moment(properties.end);
+      var start = moment(properties.start),
+          end = moment(properties.end);
       if(start.isValid() && end.isValid()) {
-        utils.setTiddlerField(this.persistentTiddlerTitle, "timeline.start", this.format ? start.format(this.format) : start.format(this.twformat));
-        utils.setTiddlerField(this.persistentTiddlerTitle, "timeline.end", this.format ? end.format(this.format) : end.format(this.twformat));
+        utils.setTiddlerField(this.persistentTiddlerTitle, "timeline.start", start.format(this.format || this.twformat));
+        utils.setTiddlerField(this.persistentTiddlerTitle, "timeline.end", end.format(this.format || this.twformat));
       }
     }
     this.writeRange = false;
+  };
+
+  // handle double-clicking an item
+  TimelineWidget.prototype.handleDoubleClickItem = function(properties) {
+    // Check if background or a tiddler is selected
+    if (properties.item !== null) {
+      var toTiddlerTitle = properties.item;
+      utils.displayTiddler(this, toTiddlerTitle);
+    }
+    else if(properties.group !== null && properties.what === "group-label") {
+      var toTiddlerTitle = properties.group;
+      if($tw.wiki.getTiddler(toTiddlerTitle)) {
+        utils.displayTiddler(this, toTiddlerTitle);
+      }
+    }
+  };
+
+  // handle moving an item along the time axis
+  TimelineWidget.prototype.handleMoveItem = function() {
+    var self = this;
+    return function(item, callback) {
+      var theTiddler = $tw.wiki.getTiddler(item.id),
+          start = moment(item.start),
+          end = moment(item.end);
+      
+      if(!theTiddler || !start.isValid() || !end.isValid()) {
+        console.log("Could not move item '" + item.id + "'");
+        callback(null);
+      } else {
+        item.title = theTiddler.fields.description || theTiddler.fields.caption || theTiddler.fields.title;
+        if(self.tipFormat !== undefined) {
+          item.title += "<br><br>" + self.startDateField + ": " + start.format(self.tipFormat);
+        }
+        utils.setTiddlerField(item.id, self.startDateField, start.format(self.format || self.twformat));
+        
+        if(self.endDateField !== undefined) {
+          if(self.tipFormat !== undefined) {
+            item.title += "<br>" + self.endDateField + ": " + end.format(self.tipFormat);
+          }
+          utils.setTiddlerField(item.id, self.endDateField, end.format(self.format || self.twformat));
+        }
+        callback(item);
+      }
+    };
   };
 
   // -- adapted from felixhayashi's tiddlymap in widget.map.js
@@ -297,13 +338,13 @@ module-type: widget
     this.timelineHolder.appendChild(navpad);
     this.domNodes.push(navpad);
 
-    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "vis-button vis-up", id: "up", style: "visibility: hidden"}}));
-    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "vis-button vis-down", id: "down", style: "visibility: hidden"}}));
-    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "vis-button vis-left", id: "left"}}));
-    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "vis-button vis-right", id: "right"}}));
-    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "vis-button vis-zoomIn", id: "zoomIn"}}));
-    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "vis-button vis-zoomOut", id: "zoomOut"}}));
-    navpad.appendChild($tw.utils.domMaker("div",{attributes:{class: "vis-button vis-zoomExtends", id: "zoomExtends"}}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{id: "up", title: "Browse up", style: "visibility: hidden"}, innerHTML: "▲"}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{id: "down", title: "Browse down", style: "visibility: hidden"}, innerHTML: "▼"}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{id: "left", title: "Browse to earlier"}, innerHTML: "◀"}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{id: "right", title: "Browse to later"}, innerHTML: "▶"}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{id: "zoomIn", title: "Zoom in"}, innerHTML: "〉〈"}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{id: "zoomOut", title: "Zoom out"}, innerHTML: "〈〉"}));
+    navpad.appendChild($tw.utils.domMaker("div",{attributes:{id: "zoomExtends", title: "Zoom to fit entries"}, innerHTML: "⛶"}));
 
     this.handleNavpadClick = this.handleNavpadClick.bind(this);
     for(var i=0; i<navpad.childNodes.length; i++) {
@@ -317,8 +358,7 @@ module-type: widget
     var overlay = this.timelineHolder.getElementsByClassName("vis-overlay")[0];
 
     this.handleItemsVisibilityChanged = this.handleItemsVisibilityChanged.bind(this);
-    var self = this;
-    var observer = new MutationObserver(function(mutations) {
+    var self = this, observer = new MutationObserver(function(mutations) {
       for(var i=0; i<mutations.length; i++) {
         self.handleItemsVisibilityChanged(mutations[i]);
       }});
@@ -408,7 +448,7 @@ module-type: widget
     }
   }
 
-  function dateFieldToDate(dateField, dateFormat) {
+  TimelineWidget.prototype.dateFieldToDate = function(dateField, dateFormat) {
     if(dateField === undefined) return;
     dateField = dateField.trim();
     var re = /moment\(["' ]*([^)"']*)["' ]*\)\.(add|subtract)\( *([^,]+) *,["' ]*([^)"']+)["' ]*\)/i;
@@ -442,10 +482,9 @@ module-type: widget
         }
       }
     }
-  }
+  };
 
-  function iconPrefix(icon, color, spanclass)
-  {
+  TimelineWidget.prototype.iconPrefix = function(icon, color, spanclass) {
     var text = "",
         iconTiddler = $tw.wiki.getTiddler(icon);
     if(iconTiddler !== undefined) {
@@ -465,25 +504,26 @@ module-type: widget
       text = "<span class='" + spanclass + "'" + (color?" style='fill:"+color+"';":"") + ">" + text;
     }
     return text;
-  }
+  };
 
-  function addTimeData(self) {
+  TimelineWidget.prototype.addTimeData = function() {
+    var self = this;
     return function(current, tiddlerName) {
-      var currentData = current.data;
-      var currentGroups = current.groups;
-      var currentErrors = current.errors;
-      var theTiddler = self.wiki.getTiddler(tiddlerName);
+      var currentData = current.data,
+          currentGroups = current.groups,
+          currentErrors = current.errors,
+          theTiddler = self.wiki.getTiddler(tiddlerName);
       // tiddler may not exist if list attribute provided to widget
       if (theTiddler !== undefined) {
         var tiddlerStartDate = theTiddler.getFieldString(self.startDateField);
-        var startDate = dateFieldToDate(tiddlerStartDate, self.format);
+        var startDate = self.dateFieldToDate(tiddlerStartDate, self.format);
         if (!isNaN(startDate)) {
           var caption = theTiddler.getFieldString(self.captionField) || tiddlerName,
               description = theTiddler.fields.description || caption,
               color = theTiddler.fields.color || false,
               style = "border-color: " + color + ";" || "",
               icon = theTiddler.fields.icon;
-          caption = iconPrefix(icon, color, "item-icon") + caption;
+          caption = self.iconPrefix(icon, color, "item-icon") + caption;
           if(self.tipFormat !== undefined) {
             description += "<br><br>" + self.startDateField + ": " + moment(startDate).format(self.tipFormat);
           }
@@ -506,7 +546,7 @@ module-type: widget
           }
           if (self.endDateField !== undefined ) {
             var tiddlerEndDate = theTiddler.getFieldString(self.endDateField);
-            var endDate = dateFieldToDate(tiddlerEndDate, self.format);
+            var endDate = self.dateFieldToDate(tiddlerEndDate, self.format);
             if(!isNaN(endDate) && endDate < startDate) {
               currentErrors.push("| [[" + tiddlerName + "]] |End date \"" + tiddlerEndDate + "\" (field `" + self.endDateField + "`) is before start date \"" + tiddlerStartDate + "\" (field `" + self.startDateField + "`)|Used start date as end date|");
               endDate = startDate;
@@ -522,7 +562,7 @@ module-type: widget
             else if(self.tipFormat !== undefined) {
               newTimepoint.title += "<br>" + self.endDateField + ": " + moment(endDate).format(self.tipFormat);
             }
-
+  
             newTimepoint.end = endDate;
             if (newTimepoint.end.getTime() != newTimepoint.start.getTime()) {
               newTimepoint.type = 'range';
@@ -544,7 +584,7 @@ module-type: widget
       }
       return {data: currentData, groups: currentGroups, errors: currentErrors};
     };
-  }
+  };
 
   TimelineWidget.prototype.updateTimeline = function() {
     this.resetWarning();
@@ -569,7 +609,7 @@ module-type: widget
       $tw.utils.each($tw.wiki.filterTiddlers(this.groupTags),
         function(tag) {groups[tag] = false;});
     }
-    var result = timepointList.reduce(addTimeData(this), {data: [], groups: groups, errors: []});
+    var result = timepointList.reduce(this.addTimeData(), {data: [], groups: groups, errors: []});
     this.displayedTiddlers = result.data;
     this.timeline.setItems(result.data);
     if (this.customTime !== undefined) {
@@ -577,7 +617,7 @@ module-type: widget
         this.timeline.removeCustomTime();
         this.hasCustomTime = false;
       }
-      var d = dateFieldToDate(this.customTime, this.format);
+      var d = this.dateFieldToDate(this.customTime, this.format);
       if (d !== undefined) {
         this.timeline.addCustomTime(d);
         this.hasCustomTime = true;
@@ -594,7 +634,7 @@ module-type: widget
       if(whitelist.indexOf(opt) > -1) this.options[opt] = config[opt];
     }
     this.timeline.setOptions(this.options);
-    if (Object.keys(result.groups).length !== 0) {
+    if(Object.keys(result.groups).length !== 0) {
       var theGroups = [];
       for (var group in result.groups) {
         if(result.groups[group]) {
@@ -609,7 +649,7 @@ module-type: widget
             if(tiddler !== undefined) {
               var icon = tiddler.fields.icon,
                   color = tiddler.fields.color || false,
-                  caption = iconPrefix(icon, color, "group-icon") + "<p>" + (tiddler.fields.caption || group) + "</p>",
+                  caption = this.iconPrefix(icon, color, "group-icon") + "<p>" + (tiddler.fields.caption || group) + "</p>",
                   description = tiddler.fields.description || tiddler.fields.caption || group;
               if(color) {
                 theGroups[theGroups.length-1].style = "border-width:3px; border-style:solid;"
@@ -639,6 +679,8 @@ module-type: widget
                       text: "Timeline in [[" + this.tiddler.fields.title + "]] starts from {{!!timeline.start}} and ends at {{!!timeline.end}}"};
         persistentConfigTiddler = $tw.wiki.addTiddler(new $tw.Tiddler(fields));
       }
+      var start = moment(this.dateFieldToDate(persistentConfigTiddler.fields["timeline.start"] || config.start, this.format) || this.timeline.getWindow().start),
+          end = moment(this.dateFieldToDate(persistentConfigTiddler.fields["timeline.end"] || config.end, this.format) || this.timeline.getWindow().end);
       if(start.isValid() && end.isValid() && start.isBefore(end)) {
         // copy config settings to working tiddler
         utils.setTiddlerField(this.persistentTiddlerTitle, "timeline.start", this.format ? start.format(this.format) : start.format(this.twformat));
@@ -646,6 +688,7 @@ module-type: widget
         // apply saved x-axis range from the working tiddler
         this.timeline.setWindow(start, end);
       }
+      this.timeline.redraw(); // redraw timeline
     }
   };
 

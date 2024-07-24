@@ -1,0 +1,7 @@
+title: $:/plugins/kixam/timeline/validOptions
+type: application/json
+
+{
+	"whitelist": ["align","clickToUse","end","format","hiddenDates","margin","max","min","moveable","selectable","orientation","showCurrentTime","showMajorLabels","showMinorLabels","stack","start","timeAxis","zoomable","zoomMin","zoomMax"],
+	"navbarReactOptions": ["clickToUse","max","min","zoomMin","zoomMax"]
+}

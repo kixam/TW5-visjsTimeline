@@ -1,0 +1,11 @@
+{
+  "title": "$:/plugins/kixam/vis-timeline",
+  "description": "vis.js Timeline plugin for TiddlyWiki5, based on vis-timeline version 7.7.3",
+  "author": "kixam",
+  "version": "0.9-prerelease",
+  "core-version": ">=5.1.8",
+  "source": "https://github.com/kixam/TW5-visjsTimeline",
+  "list": "readme usage license",
+  "dependents": ["$:/plugins/kixam/moment","$:/plugins/tiddlywiki/vis-data","$:/plugins/TheDiveO/FontAwesome"],
+  "plugin-type": "plugin"
+}

@@ -5,10 +5,11 @@
 # Script Configuration
 #####################################################################
 
-pluginPrefix="$:/plugins/kixam/timeline" # prefix for all tiddlers of this plugin
-targetDir="plugins/timeline" # output path
+pluginPrefix="$:/plugins/kixam/vis-timeline" # prefix for all tiddlers of this plugin
+targetDir="plugins/vis-timeline" # output path
 moduleName="vis-timeline" # module's src name (and path)
-srcPath="${moduleName}/dist" # module's dist path
+srcPath="${moduleName}/dist" # module path
+cssPath="${moduleName}/dist" # module's CSS path
 fileName="vis-timeline-graph2d" # module's files names without their extension
 
 #####################################################################
@@ -19,7 +20,7 @@ fileName="vis-timeline-graph2d" # module's files names without their extension
 printf "Fetch upstream resources...\n"
 #====================================================================
 
-git submodule update --recursive --remote
+git submodule update --init --recursive --remote
 
 #====================================================================
 printf "Perform cleanup...\n"
@@ -32,7 +33,7 @@ if [ $COMPILE == 1 ]; then
   printf "Compile module with dependencies to separate TW5 modules...\n"
   #====================================================================
   
-  res=$(cd $moduleName && npm run build -- -e moment,hammerjs)
+  res=$(cd $moduleName && npm run build -- -e moment,hammer)
 fi
 
 #====================================================================
@@ -52,7 +53,7 @@ macro=\
 <$macrocall $name="makedatauri" type={{$title$!!type}} text={{$title$}}/>
 \end'
 
-body=$(cat "$srcPath/$fileName.min.css")
+body=$(cat "$cssPath/$fileName.min.css")
 
 printf "%s\n\n%s\n\n%s" "$header" "$macro" "$body" > "$targetDir/tiddlers/$moduleName.css.tid"
 
@@ -82,8 +83,9 @@ printf "%s\n\n%s\n" "$header" "$body" "$footer" > $targetDir/$moduleName.js
 
 # replace vanilla references to dependencies with references to TW5 plugins
 
-sed -r -i -e 's|require\("moment"\),require\("hammerjs"\)|require("$:/plugins/kixam/moment/moment.js"),require("$:/plugins/tiddlywiki/hammerjs/hammer.js")|' "$targetDir/$moduleName.js"
-sed -r -i -e 's|define\(\["moment","hammerjs"\]|define(["$:/plugins/kixam/moment/moment.js","$:/plugins/tiddlywiki/hammerjs/hammer.js"]|' "$targetDir/$moduleName.js"
+sed -r -i -e 's|require\("moment"\)|require("$:/plugins/kixam/moment/moment.js")|' "$targetDir/$moduleName.js"
+sed -r -i -e 's|require\("vis-data/peer/umd/vis-data.js"\)|require("$:/plugins/kixam/vis-data/vis-data.js")|' "$targetDir/$moduleName.js"
+sed -r -i -e 's|define\(\["exports","moment","vis-data/peer/umd/vis-data.js"\]|define(["exports","$:/plugins/kixam/moment/moment.js","$:/plugins/kixam/vis-data/vis-data.js"]|' "$targetDir/$moduleName.js"
 
 #====================================================================
 printf "Update version information...\n"
